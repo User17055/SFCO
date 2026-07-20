@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Administrativo · TudoPraPet</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav class="topbar">
+    <div class="brand">
+      <h1>Tudo<span class="highlight">Pra</span>Pet</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="admin-meta">
+        <div class="admin-title">Painel Administrativo</div>
+        <div class="admin-email">andrejunior.rodriguesdasilva@gmail.com</div>
+      </div>
+      <button class="btn-store" type="button">Ver loja</button>
+    </div>
+  </nav>
+
+  <div class="layout">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+      <nav>
+        
+
+        <div class="nav-card">
+          <div class="nav-group">
+            <span class="nav-title">Clube</span>
+            <button class="nav-link" data-target="clube-usuarios">Usuários</button>
+            <button class="nav-link" data-target="clube-membros">Membros</button>
+            <button class="nav-link" data-target="clube-preco">Preço do clube</button>
+            <button class="nav-link" data-target="clube-indicacoes">Indicações</button>
+          </div>
+
+          <div class="nav-group">
+            <span class="nav-title">Catálogo</span>
+            <button class="nav-link" data-target="catalogo-conteudo">Conteúdo</button>
+            <button class="nav-link" data-target="catalogo-detalhes">Detalhes</button>
+            <button class="nav-link" data-target="catalogo-ordem">Ordem</button>
+            <button class="nav-link" data-target="catalogo-menu">Menu</button>
+          </div>
+
+          <div class="nav-group">
+            <span class="nav-title">Vitrine</span>
+            <button class="nav-link" data-target="vitrine-banners">Banners</button>
+            <button class="nav-link" data-target="vitrine-destaques">Destaques</button>
+          </div>
+
+          <div class="nav-group">
+            <span class="nav-title">Operação</span>
+            <button class="nav-link" data-target="operacao-retirada">Retirada</button>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- ===== CONTENT ===== -->
+    <main class="content">
+
+      <!-- USUÁRIOS CADASTRADOS -->
+      <section id="usuarios" class="panel active">
+        <div class="panel-header">
+          <div>
+            <h2>Central de usuários cadastrados</h2>
+            <p>Gerencie todos os usuários da plataforma TudoPraPet.</p>
+          </div>
+          <button class="btn-primary" type="button">+ Novo usuário</button>
+        </div>
+
+        <div class="card table-toolbar-card">
+          <div class="table-toolbar">
+            <div class="toolbar-info">
+              <h3>Usuários cadastrados</h3>
+              <div class="toolbar-stats">
+                <span><strong>128</strong> total cadastrados</span>
+                <span><strong>84</strong> com plano</span>
+                <span><strong>44</strong> sem plano</span>
+              </div>
+            </div>
+            <div class="toolbar-filters">
+              <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" placeholder="Buscar por nome ou email">
+              </div>
+              <input type="date" class="date-filter" title="Filtrar por data de cadastro">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Plano</th>
+                <th>Cadastrado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="user-name">Ana Beatriz Souza</td>
+                <td class="user-email-cell">ana.souza@email.com</td>
+                <td><span class="badge badge-clube">Clube Pet</span></td>
+                <td>12/03/2025</td>
+                <td class="row-actions">
+                  <button class="icon-btn">Editar</button>
+                  <button class="icon-btn danger">Remover</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="user-name">Carlos Eduardo Lima</td>
+                <td class="user-email-cell">carlos.lima@email.com</td>
+                <td><span class="badge badge-basico">Básico</span></td>
+                <td>28/05/2025</td>
+                <td class="row-actions">
+                  <button class="icon-btn">Editar</button>
+                  <button class="icon-btn danger">Remover</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="user-name">Fernanda Torres</td>
+                <td class="user-email-cell">fernanda.torres@email.com</td>
+                <td><span class="badge badge-premium">Premium</span></td>
+                <td>03/01/2026</td>
+                <td class="row-actions">
+                  <button class="icon-btn">Editar</button>
+                  <button class="icon-btn danger">Remover</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="user-name">João Pedro Martins</td>
+                <td class="user-email-cell">joao.martins@email.com</td>
+                <td><span class="badge badge-clube">Clube Pet</span></td>
+                <td>19/06/2026</td>
+                <td class="row-actions">
+                  <button class="icon-btn">Editar</button>
+                  <button class="icon-btn danger">Remover</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="user-name">Mariana Costa</td>
+                <td class="user-email-cell">mariana.costa@email.com</td>
+                <td><span class="badge badge-basico">Básico</span></td>
+                <td>07/07/2026</td>
+                <td class="row-actions">
+                  <button class="icon-btn">Editar</button>
+                  <button class="icon-btn danger">Remover</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CLUBE > USUÁRIOS -->
+      <section id="clube-usuarios" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Clube · Usuários</h2>
+            <p>Usuários vinculados ao Clube TudoPraPet.</p>
+          </div>
+        </div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Cadastrado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="user-name">Ana Beatriz Souza</td>
+                <td class="user-email-cell">ana.souza@email.com</td>
+                <td><span class="badge badge-premium">Ativo</span></td>
+                <td>12/03/2025</td>
+                <td class="row-actions">
+                  <button class="icon-btn">Ver</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="user-name">João Pedro Martins</td>
+                <td class="user-email-cell">joao.martins@email.com</td>
+                <td><span class="badge badge-premium">Ativo</span></td>
+                <td>19/06/2026</td>
+                <td class="row-actions">
+                  <button class="icon-btn">Ver</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CLUBE > MEMBROS -->
+      <section id="clube-membros" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Clube · Membros</h2>
+            <p>Visão geral dos membros ativos do clube.</p>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Membros ativos</div>
+            <div class="stat-value">1.284</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Novos este mês</div>
+            <div class="stat-value mustard">96</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Cancelamentos</div>
+            <div class="stat-value">14</div>
+          </div>
+        </div>
+        <div class="placeholder-card">
+          <h3>Lista de membros</h3>
+          <p>A listagem detalhada de membros do clube será exibida aqui.</p>
+        </div>
+      </section>
+
+      <!-- CLUBE > PREÇO DO CLUBE -->
+      <section id="clube-preco" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Clube · Preço do clube</h2>
+            <p>Configure o valor da assinatura do Clube TudoPraPet.</p>
+          </div>
+        </div>
+        <div class="card" style="padding:24px;">
+          <label class="price-input-label">Valor mensal (R$)</label>
+          <input type="text" value="49,90" class="price-input">
+          <div class="price-actions">
+            <button class="btn-primary" type="button">Salvar alterações</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CLUBE > INDICAÇÕES -->
+      <section id="clube-indicacoes" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Clube · Indicações</h2>
+            <p>Acompanhe as indicações feitas pelos membros do clube.</p>
+          </div>
+        </div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Indicado por</th>
+                <th>Email do indicado</th>
+                <th>Status</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="user-name">Ana Beatriz Souza</td>
+                <td class="user-email-cell">novo.amigo@email.com</td>
+                <td><span class="badge badge-premium">Convertido</span></td>
+                <td>02/07/2026</td>
+              </tr>
+              <tr>
+                <td class="user-name">Fernanda Torres</td>
+                <td class="user-email-cell">outro.contato@email.com</td>
+                <td><span class="badge badge-basico">Pendente</span></td>
+                <td>15/07/2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CATÁLOGO > CONTEÚDO -->
+      <section id="catalogo-conteudo" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Catálogo · Conteúdo</h2>
+            <p>Gerencie os produtos e conteúdos exibidos na loja.</p>
+          </div>
+          <button class="btn-primary" type="button">+ Novo item</button>
+        </div>
+        <div class="placeholder-card">
+          <h3>Itens do catálogo</h3>
+          <p>A listagem de produtos e conteúdos será exibida aqui.</p>
+        </div>
+      </section>
+
+      <!-- CATÁLOGO > DETALHES -->
+      <section id="catalogo-detalhes" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Catálogo · Detalhes</h2>
+            <p>Edite as informações detalhadas de cada item do catálogo.</p>
+          </div>
+        </div>
+        <div class="placeholder-card">
+          <h3>Detalhes do item</h3>
+          <p>Selecione um item do catálogo para editar seus detalhes.</p>
+        </div>
+      </section>
+
+      <!-- CATÁLOGO > ORDEM -->
+      <section id="catalogo-ordem" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Catálogo · Ordem</h2>
+            <p>Defina a ordem de exibição dos itens na loja.</p>
+          </div>
+        </div>
+        <div class="placeholder-card">
+          <h3>Ordenação</h3>
+          <p>Arraste e solte os itens para reordenar (em breve).</p>
+        </div>
+      </section>
+
+      <!-- CATÁLOGO > MENU -->
+      <section id="catalogo-menu" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Catálogo · Menu</h2>
+            <p>Gerencie as categorias e o menu de navegação da loja.</p>
+          </div>
+        </div>
+        <div class="placeholder-card">
+          <h3>Estrutura do menu</h3>
+          <p>A árvore de categorias e menu será exibida aqui.</p>
+        </div>
+      </section>
+
+      <!-- VITRINE > BANNERS -->
+      <section id="vitrine-banners" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Vitrine · Banners</h2>
+            <p>Gerencie os banners exibidos na loja.</p>
+          </div>
+          <button class="btn-primary" type="button">+ Novo banner</button>
+        </div>
+        <div class="placeholder-card">
+          <h3>Banners cadastrados</h3>
+          <p>A listagem de banners da vitrine será exibida aqui.</p>
+        </div>
+      </section>
+
+      <!-- VITRINE > DESTAQUES -->
+      <section id="vitrine-destaques" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Vitrine · Destaques</h2>
+            <p>Defina os produtos e conteúdos em destaque na loja.</p>
+          </div>
+        </div>
+        <div class="placeholder-card">
+          <h3>Itens em destaque</h3>
+          <p>A listagem de destaques da vitrine será exibida aqui.</p>
+        </div>
+      </section>
+
+      <!-- OPERAÇÃO > RETIRADA -->
+      <section id="operacao-retirada" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Operação · Retirada</h2>
+            <p>Gerencie os pontos e pedidos de retirada.</p>
+          </div>
+        </div>
+        <div class="placeholder-card">
+          <h3>Pedidos para retirada</h3>
+          <p>A listagem de pedidos de retirada será exibida aqui.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    const navLinks = document.querySelectorAll('.nav-link');
+    const panels = document.querySelectorAll('.panel');
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        const target = link.getAttribute('data-target');
+
+        navLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+
+        panels.forEach(panel => {
+          panel.classList.toggle('active', panel.id === target);
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
