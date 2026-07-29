@@ -1,0 +1,272 @@
+/* ===== Design tokens & base ===== */
+:root {
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e6e9ef;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-primary: #0c387e;
+  --color-primary-soft: #eaf1fb;
+  --color-accent: #f1c744;
+  --color-accent-soft: #fdf6e1;
+  --color-prin:rgb(0, 0, 0);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ===== Estrutura do layout ===== */
+.estrutura-app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.barra-lateral {
+  width: 264px;
+  flex-shrink: 0;
+  background: var(--color-primary);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 40;
+  transition: transform 0.25s ease;
+}
+
+.area-principal {
+  margin-left: 264px;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.barra-superior {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(248, 250, 252, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (max-width: 1024px) {
+  .barra-lateral {
+    transform: translateX(-100%);
+  }
+  .barra-lateral.aberta {
+    transform: translateX(0);
+    box-shadow: var(--shadow-md);
+  }
+  .area-principal {
+    margin-left: 0;
+  }
+}
+
+/* ===== Painel branco do menu (dentro da barra lateral escura) ===== */
+.painel-menu {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin: 0 12px 12px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+/* ===== Navegacao da barra lateral ===== */
+.link-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 2px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-border);
+  transition: color 0.15s ease, gap 0.15s ease;
+}
+
+.link-menu:last-child {
+  border-bottom: none;
+}
+
+.link-menu:hover {
+  color: var(--color-primary);
+  gap: 13px;
+}
+
+.link-menu.ativo {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.link-menu svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* ===== Cartoes ===== */
+.cartao {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.cartao-hover:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* ===== Selos (badges) ===== */
+.selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.selo-ponto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.selo-verde { background: #dcfce7; color: #036426; }
+.selo-verde .selo-ponto { background: #16a34a; }
+
+.selo-amarelo { background: #fef3c7; color: #d97706; }
+.selo-amarelo .selo-ponto { background: #d97706; }
+
+.selo-vermelho { background: #fee2e2; color: #dc2626; }
+.selo-vermelho .selo-ponto { background: #dc2626; }
+
+.selo-cinza { background: #f1f5f9; color: #64748b; }
+.selo-cinza .selo-ponto { background: #64748b; }
+
+.selo-azul { background: var(--color-primary-soft); color: var(--color-primary); }
+.selo-azul .selo-ponto { background: var(--color-primary); }
+
+/* ===== Animacoes ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animar-entrada {
+  animation: fadeInUp 0.4s ease both;
+}
+
+.atraso-1 { animation-delay: 0.05s; }
+.atraso-2 { animation-delay: 0.1s; }
+.atraso-3 { animation-delay: 0.15s; }
+.atraso-4 { animation-delay: 0.2s; }
+.atraso-5 { animation-delay: 0.25s; }
+
+/* ===== Tabela ===== */
+.tabela-dados {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+}
+
+.tabela-dados thead th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.tabela-dados tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: var(--color-text-primary);
+  vertical-align: middle;
+}
+
+.tabela-dados tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabela-dados tbody tr {
+  transition: background 0.15s ease;
+}
+
+.tabela-dados tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ===== Caixa do grafico ===== */
+.caixa-grafico {
+  position: relative;
+  width: 100%;
+}
+
+/* ===== Botao de icone ===== */
+.botao-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.botao-icone:hover {
+  background: #f1f5f9;
+  border-color: var(--color-border);
+}

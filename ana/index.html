@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard · TudoPraPet</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Poppins', 'sans-serif'] },
+        colors: {
+          brand: { 50: '#eaf1fb', 500: '#2f5fa8', 600: '#245095', 700: '#1c3f78' },
+          accent: { 400: '#f4d571', 500: '#f1c744', 600: '#d9ad2a' },
+        },
+      },
+    },
+  };
+</script>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="font-sans">
+
+<div class="estrutura-app">
+  <aside class="barra-lateral" id="sidebar-root"></aside>
+
+  <div class="area-principal" id="main-area">
+    <header class="barra-superior" id="topbar-root"></header>
+
+    <main class="flex-1 px-4 lg:px-8 py-6 max-w-[1400px] w-full mx-auto">
+
+      <div id="page-header-root"></div>
+
+      <!-- KPI cards -->
+      <div id="kpi-cards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6"></div>
+
+      <!-- Resumo financeiro -->
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h2 class="text-base font-semibold text-slate-900">Resumo financeiro</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Receita, pendencias e perdas ficticias</p>
+        </div>
+        <span class="selo selo-azul"><span class="selo-ponto"></span>Ficticio</span>
+      </div>
+      <div id="finance-cards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4"></div>
+
+      <div class="cartao animar-entrada atraso-5 p-5 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-900">Receita mensal</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Planos ativos - ultimos 6 meses</p>
+          </div>
+        </div>
+        <div class="caixa-grafico" style="height:220px;">
+          <canvas id="revenueChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div class="cartao animar-entrada atraso-2 p-5 lg:col-span-2">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">Novos clientes por mes</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Ultimos 6 meses</p>
+            </div>
+            <span class="selo selo-azul"><span class="selo-ponto"></span>Ficticio</span>
+          </div>
+          <div class="caixa-grafico" style="height:260px;">
+            <canvas id="newClientsChart"></canvas>
+          </div>
+        </div>
+
+        <div class="cartao animar-entrada atraso-3 p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">Planos por status</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Distribuicao atual</p>
+            </div>
+          </div>
+          <div class="caixa-grafico" style="height:260px;">
+            <canvas id="planStatusChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent plans table -->
+      <div class="cartao animar-entrada atraso-4 overflow-hidden">
+        <div class="flex items-center justify-between px-5 pt-5 pb-1">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-900">Planos recentes</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Ultimas atualizacoes de planos pet</p>
+          </div>
+          <a href="planos.html" class="text-xs font-medium text-brand-600 hover:underline">Ver todos</a>
+        </div>
+        <div class="overflow-x-auto mt-3">
+          <table class="tabela-dados">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Pet</th>
+                <th>Plano</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="recent-plans-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/components.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
