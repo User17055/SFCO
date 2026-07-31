@@ -30,6 +30,37 @@ function criarGrafico(id, configuracao) {
   return grafico;
 }
 
+function preencherParticipantes(relatorio, assinaturas) {
+  const corpo = document.getElementById('participantes-plano');
+  corpo.innerHTML = '';
+  const participantes = (Array.isArray(assinaturas) ? assinaturas : [])
+    .filter((item) => item.plano === relatorio.nome)
+    .sort((a, b) => a.cliente.localeCompare(b.cliente, 'pt-BR') || a.pet.localeCompare(b.pet, 'pt-BR'));
+
+  if (participantes.length === 0) {
+    const linha = document.createElement('tr');
+    linha.innerHTML = '<td colspan="5" class="text-center text-slate-500 py-8">Nenhum tutor atual encontrado para este plano.</td>';
+    corpo.appendChild(linha);
+    return;
+  }
+
+  participantes.forEach((item) => {
+    const linha = document.createElement('tr');
+    [
+      item.cliente || '-',
+      item.pet || '-',
+      item.dataInicio ? formatDate(item.dataInicio) : 'Nao informado',
+      formatCurrency(Number(item.valorMensal || 0)),
+      item.status || '-',
+    ].forEach((valor) => {
+      const celula = document.createElement('td');
+      celula.textContent = valor;
+      linha.appendChild(celula);
+    });
+    corpo.appendChild(linha);
+  });
+}
+
 function preencherCancelamentos(relatorio) {
   const corpo = document.getElementById('historico-cancelamentos-plano');
   corpo.innerHTML = '';
@@ -39,19 +70,22 @@ function preencherCancelamentos(relatorio) {
 
   if (registros.length === 0) {
     const linha = document.createElement('tr');
-    linha.innerHTML = '<td colspan="6" class="text-center text-slate-500 py-8">Nenhum cancelamento identificado para este plano.</td>';
+    linha.innerHTML = '<td colspan="7" class="text-center text-slate-500 py-8">Nenhum cancelamento identificado para este plano.</td>';
     corpo.appendChild(linha);
     return;
   }
 
   [...registros].reverse().forEach((item) => {
     const linha = document.createElement('tr');
-    const competencia = item.competencia
-      ? new Date(`${item.competencia}T12:00:00`).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })
-      : '-';
+    const competencia = item.dataCancelamento
+      ? formatDate(item.dataCancelamento)
+      : (item.competencia
+        ? new Date(`${String(item.competencia).slice(0, 10)}T12:00:00`).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })
+        : '-');
     [
       competencia,
       item.cliente || '-',
+      item.pet || 'Nao informado na planilha',
       item.motivo || 'Motivo nao informado',
       item.tentativaRecuperacao || '-',
       String(item.quantidade || 0),
@@ -65,7 +99,7 @@ function preencherCancelamentos(relatorio) {
   });
 }
 
-function renderizarRelatorio(relatorio) {
+function renderizarRelatorio(relatorio, assinaturas) {
   textoMetrica('titulo-plano', relatorio.nome);
   textoMetrica('metrica-valor', formatCurrency(Number(relatorio.valorPlano || 0)));
   textoMetrica('metrica-ativos', relatorio.quantidadeAtual);
@@ -74,6 +108,7 @@ function renderizarRelatorio(relatorio) {
   textoMetrica('metrica-cancelados', relatorio.totalCancelados || 0);
   textoMetrica('metrica-valor-cancelado', formatCurrency(Number(relatorio.valorTotalCancelado || 0)));
   document.getElementById('conteudo-relatorio-plano').hidden = false;
+  preencherParticipantes(relatorio, assinaturas);
 
   criarGrafico('grafico-quantidade-plano', {
     type: 'line',
@@ -126,7 +161,7 @@ async function carregarRelatorioPlano() {
     if (!resposta.ok) throw new Error(resultado.mensagem || 'Nao foi possivel carregar o plano.');
     const relatorio = (resultado.relatoriosPlanos || []).find((item) => item.nome === nomePlano);
     if (!relatorio) throw new Error('O plano selecionado nao foi encontrado.');
-    renderizarRelatorio(relatorio);
+    renderizarRelatorio(relatorio, resultado.assinaturas);
   } catch (erro) {
     mensagemErro.querySelector('span').textContent = erro.message;
     mensagemErro.hidden = false;

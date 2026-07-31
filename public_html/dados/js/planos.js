@@ -29,6 +29,7 @@ function assinaturasParaExibir() {
       motivoCancelamento: item.motivo,
       tentativaRecuperacao: item.tentativaRecuperacao,
       competencia: item.competencia,
+      quantidade: item.quantidade,
       tipoRegistro: 'cancelamento-importado',
     }));
 
@@ -62,13 +63,22 @@ function criarDetalhePlano(item) {
 
   const detalhes = criarElemento('div', 'grid sm:grid-cols-2 xl:grid-cols-4 gap-2 mt-3 text-xs text-slate-500');
   detalhes.appendChild(criarElemento('span', '', `Valor mensal: ${formatCurrency(Number(item.valorMensal || 0))}`));
-  detalhes.appendChild(criarElemento('span', '', `Inicio: ${item.dataInicio ? formatDate(item.dataInicio) : '-'}`));
+  detalhes.appendChild(criarElemento('span', '', `Inicio do plano: ${item.dataInicio ? formatDate(item.dataInicio) : '-'}`));
   detalhes.appendChild(criarElemento('span', '', `Reajuste: ${item.dataReajuste ? formatDate(item.dataReajuste) : '-'}`));
-  detalhes.appendChild(criarElemento('span', '', `Competencia: ${item.competencia ? formatDate(item.competencia) : '-'}`));
+  if (item.canceladoEm) {
+    detalhes.appendChild(criarElemento('span', 'text-red-600', `Data do cancelamento: ${formatDate(item.canceladoEm)}`));
+  } else if (item.competencia) {
+    const mes = new Date(`${String(item.competencia).slice(0, 10)}T12:00:00`)
+      .toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    detalhes.appendChild(criarElemento('span', 'text-red-600', `Mes do cancelamento: ${mes}`));
+  } else {
+    detalhes.appendChild(criarElemento('span', '', 'Data do cancelamento: -'));
+  }
   caixa.appendChild(detalhes);
 
   if (item.adicional) caixa.appendChild(criarElemento('p', 'text-xs text-slate-500 mt-2', `Adicional: ${item.adicional}`));
   if (item.motivoCancelamento) caixa.appendChild(criarElemento('p', 'text-xs text-red-600 mt-2', `Motivo: ${item.motivoCancelamento}`));
+  if (item.quantidade > 1) caixa.appendChild(criarElemento('p', 'text-xs text-slate-500 mt-2', `Quantidade cancelada: ${item.quantidade}`));
   if (item.tentativaRecuperacao) caixa.appendChild(criarElemento('p', 'text-xs text-slate-500 mt-2', `Tentativa de recuperacao: ${item.tentativaRecuperacao}`));
   if (item.observacoes) caixa.appendChild(criarElemento('p', 'text-xs text-slate-500 mt-2', item.observacoes));
   return caixa;

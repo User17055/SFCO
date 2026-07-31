@@ -113,9 +113,15 @@ try {
         '3 SUPER ECONOMICO FELINO' => 'PLANO ECONOMICO FELINO',
         'SUPER ECONOMICO+2 BANHOS' => 'SUPER ECONOMICO + BANHOS',
     ];
+    $competenciasCanceladasNoSistema = $pdo->query(
+        "SELECT DISTINCT DATE_FORMAT(cancelado_em, '%Y-%m')
+           FROM assinaturas
+          WHERE status = 'Cancelado' AND cancelado_em IS NOT NULL"
+    )->fetchAll(PDO::FETCH_COLUMN);
     $todasCompetencias = array_values(array_unique(array_merge(
         array_keys($movimentos['novosPorMes']),
-        array_keys($movimentos['canceladosPorMes'])
+        array_keys($movimentos['canceladosPorMes']),
+        $competenciasCanceladasNoSistema
     )));
     sort($todasCompetencias);
     $rotulosCompetencias = array_map(
@@ -240,11 +246,43 @@ try {
         if (!isset($relatorios[$chave])) continue;
         $relatorios[$chave]['motivosCancelamentos'][] = [
             'cliente' => $cancelamento['cliente'],
+            'pet' => '',
             'competencia' => $cancelamento['competencia'],
+            'dataCancelamento' => null,
             'motivo' => $cancelamento['motivo'],
             'tentativaRecuperacao' => $cancelamento['tentativaRecuperacao'],
             'quantidade' => $cancelamento['quantidade'],
             'valor' => $cancelamento['valor'],
+        ];
+    }
+
+    $cancelamentosImportadosVistos = [];
+    foreach ($cancelamentos as $cancelamento) {
+        $plano = $normalizarNomePlano($cancelamento['plano']);
+        $plano = $aliasesCancelamentos[$plano] ?? $plano;
+        $mes = substr((string) $cancelamento['competencia'], 0, 7);
+        $cancelamentosImportadosVistos[mb_strtoupper(trim($cancelamento['cliente'])) . '|' . $plano . '|' . $mes] = true;
+    }
+    foreach ($assinaturas as $assinatura) {
+        if ($assinatura['status'] !== 'Cancelado') continue;
+        $chave = $normalizarNomePlano($assinatura['plano']);
+        if (!isset($relatorios[$chave])) continue;
+        $competencia = $assinatura['canceladoEm']
+            ? substr((string) $assinatura['canceladoEm'], 0, 7)
+            : $movimentos['competenciaAtual'];
+        $chaveDuplicidade = mb_strtoupper(trim($assinatura['cliente'])) . '|' . $chave . '|' . $competencia;
+        if (isset($cancelamentosImportadosVistos[$chaveDuplicidade])) continue;
+        $relatorios[$chave]['cancelados'][$competencia]++;
+        $relatorios[$chave]['valoresCancelados'][$competencia] += (float) $assinatura['valorMensal'];
+        $relatorios[$chave]['motivosCancelamentos'][] = [
+            'cliente' => $assinatura['cliente'],
+            'pet' => $assinatura['pet'],
+            'competencia' => $competencia . '-01',
+            'dataCancelamento' => $assinatura['canceladoEm'],
+            'motivo' => $assinatura['motivoCancelamento'],
+            'tentativaRecuperacao' => '',
+            'quantidade' => 1,
+            'valor' => $assinatura['valorMensal'],
         ];
     }
 

@@ -53,9 +53,10 @@
     </header>
 
     <main class="flex-1 px-4 lg:px-8 py-6 max-w-[1500px] w-full mx-auto">
-      <a href="planos.html" class="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-900 mb-4">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>Voltar para planos
-      </a>
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <a href="planos.html" class="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-900"><i data-lucide="arrow-left" class="w-4 h-4"></i>Voltar para planos</a>
+        <a href="planos.html?filtro=cancelados" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 text-sm font-semibold text-red-700 hover:bg-red-100"><i data-lucide="circle-x" class="w-4 h-4"></i>Ver todos os cancelados</a>
+      </div>
 
       <div id="relatorio-plano-erro" class="cadastro-erro mb-5" hidden role="alert"><i data-lucide="circle-alert" class="w-4 h-4"></i><span></span></div>
 
@@ -82,17 +83,22 @@
           <div class="cartao p-5"><h2 class="text-sm font-semibold text-slate-900 mb-1">Valores por mes</h2><p class="text-xs text-slate-500 mb-4">Valor mensal ativo e valor cancelado</p><div class="caixa-grafico" style="height:280px"><canvas id="grafico-valores-plano"></canvas></div></div>
         </div>
 
+        <div class="cartao overflow-hidden mb-5">
+          <div class="px-5 py-4 border-b border-slate-100"><h2 class="text-sm font-semibold text-slate-900">Tutores e pets deste plano</h2><p class="text-xs text-slate-500 mt-1">Veja quando cada pet iniciou o plano</p></div>
+          <div class="overflow-x-auto"><table class="tabela-dados"><thead><tr><th>Tutor</th><th>Pet</th><th>Inicio do plano</th><th>Valor mensal</th><th>Status</th></tr></thead><tbody id="participantes-plano"></tbody></table></div>
+        </div>
+
         <div class="cartao overflow-hidden">
           <div class="px-5 py-4 border-b border-slate-100"><h2 class="text-sm font-semibold text-slate-900">Historico de cancelamentos do plano</h2><p class="text-xs text-slate-500 mt-1">Somente registros em que a planilha identifica o plano</p></div>
-          <div class="overflow-x-auto"><table class="tabela-dados"><thead><tr><th>Mes</th><th>Tutor</th><th>Motivo</th><th>Tentativa de recuperacao</th><th>Quantidade</th><th>Valor cancelado</th></tr></thead><tbody id="historico-cancelamentos-plano"></tbody></table></div>
+          <div class="overflow-x-auto"><table class="tabela-dados"><thead><tr><th>Data/mes do cancelamento</th><th>Tutor</th><th>Pet</th><th>Motivo</th><th>Tentativa de recuperacao</th><th>Quantidade</th><th>Valor cancelado</th></tr></thead><tbody id="historico-cancelamentos-plano"></tbody></table></div>
         </div>
       </section>
     </main>
   </div>
 </div>
 <script src="js/auth.js"></script>
-<script src="js/components.js"></script>
+<script src="js/components.js?v=20260731-2"></script>
 <script src="js/layout.js?v=20260731-2"></script>
-<script src="js/relatorio-plano.js?v=20260731-2"></script>
+<script src="js/relatorio-plano.js?v=20260731-3"></script>
 </body>
 </html>

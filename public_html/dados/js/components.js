@@ -23,7 +23,8 @@ function formatCurrency(value) {
 
 /** Converte uma data no formato ISO (AAAA-MM-DD) para o formato BR (DD/MM/AAAA) */
 function formatDate(isoDate) {
-  const [y, m, d] = isoDate.split('-');
+  const [y, m, d] = String(isoDate).slice(0, 10).split('-');
+  if (!y || !m || !d) return '-';
   return `${d}/${m}/${y}`;
 }
 
