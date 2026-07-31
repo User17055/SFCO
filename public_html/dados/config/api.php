@@ -20,7 +20,7 @@ function exigirAcessoApi(string $metodo = 'GET'): void
             'mensagem' => 'Sessao expirada. Entre novamente.',
         ]);
     }
-    if (!empty($_SESSION['trocar_senha'])) {
+    if (sessaoExigeTrocaSenha()) {
         responderJson(403, [
             'sucesso' => false,
             'mensagem' => 'Troque sua senha antes de acessar os dados.',

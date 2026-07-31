@@ -4,8 +4,28 @@ function mostrarErro(campo, mensagem) {
   wrapper.querySelector('.campo-erro').textContent = mensagem;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   if (window.lucide) lucide.createIcons();
+
+  /* Nao exibe novamente a troca obrigatoria quando ela ja foi concluida. */
+  try {
+    const verificacao = await fetch('api/usuario.php', {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+    });
+    if (verificacao.ok) {
+      sessionStorage.setItem('tpp-auth', '1');
+      window.location.replace('index.html');
+      return;
+    }
+    if (verificacao.status === 401) {
+      sessionStorage.removeItem('tpp-auth');
+      window.location.replace('login.html');
+      return;
+    }
+  } catch (_) {
+    // Mantem o formulario se a verificacao estiver temporariamente indisponivel.
+  }
 
   const form = document.getElementById('form-trocar-senha');
   const novaSenha = document.getElementById('campo-nova-senha');

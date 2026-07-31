@@ -63,7 +63,7 @@ if (!isset($_SESSION['usuario_id'])) {
         'mensagem' => 'Entre novamente para realizar o cadastro.',
     ]);
 }
-if (!empty($_SESSION['trocar_senha'])) {
+if (sessaoExigeTrocaSenha()) {
     responder(403, [
         'sucesso' => false,
         'mensagem' => 'Troque sua senha antes de realizar o cadastro.',
