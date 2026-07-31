@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS assinaturas (
     plano_id INT NOT NULL,
     data_inicio DATE NULL,
     data_vencimento DATE NULL,
+    status ENUM('Ativo', 'Cancelado') NOT NULL DEFAULT 'Ativo',
     INDEX idx_assinaturas_pet (pet_id),
     INDEX idx_assinaturas_plano (plano_id),
     CONSTRAINT fk_assinaturas_pet

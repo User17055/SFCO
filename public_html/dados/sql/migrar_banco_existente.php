@@ -39,4 +39,24 @@ if ((int) $consulta->fetchColumn() === 0) {
     echo "Coluna usuarios.trocar_senha ja existe.\n";
 }
 
+$consulta = $pdo->prepare(
+    "SELECT COUNT(*)
+       FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = 'assinaturas'
+        AND COLUMN_NAME = 'status'"
+);
+$consulta->execute();
+
+if ((int) $consulta->fetchColumn() === 0) {
+    $pdo->exec(
+        "ALTER TABLE assinaturas
+         ADD COLUMN status ENUM('Ativo', 'Cancelado')
+         NOT NULL DEFAULT 'Ativo' AFTER data_vencimento"
+    );
+    echo "Coluna assinaturas.status adicionada.\n";
+} else {
+    echo "Coluna assinaturas.status ja existe.\n";
+}
+
 echo "Migracao concluida.\n";

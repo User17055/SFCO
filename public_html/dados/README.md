@@ -170,3 +170,20 @@ campo passa para `0` e o painel é liberado. O logout também encerra a sessão 
 
 O endpoint de cadastro exige uma sessão autenticada e impede o cadastro
 enquanto a troca obrigatória estiver pendente.
+
+## Dashboard com dados reais
+
+O `index.html` não carrega mais os valores `MOCK_*` de `js/data.js`. O arquivo
+`js/dashboard.js` consulta `api/dashboard.php`, que calcula diretamente no
+MySQL:
+
+- total de clientes e pets;
+- assinaturas ativas, próximas do vencimento e vencidas;
+- receita vigente, valores futuros, vencidos e cancelados;
+- receita e novos clientes dos últimos seis meses;
+- distribuição atual das assinaturas por status;
+- nome, e-mail e iniciais do usuário autenticado.
+
+Uma assinatura futura é mostrada como pendente. Uma assinatura fora da data de
+vigência é mostrada como vencida. Cancelamentos usam o campo real
+`assinaturas.status`, adicionado pela migração.
