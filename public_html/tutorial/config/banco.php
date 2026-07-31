@@ -4,17 +4,15 @@ declare(strict_types=1);
 /**
  * Cria uma conexao PDO com MySQL.
  *
- * Na hospedagem, prefira definir as variaveis de ambiente TPP_DB_*.
- * Os valores padrao abaixo atendem a instalacao comum do XAMPP.
+ * Credenciais do banco de testes da hospedagem.
  */
 function conectarBanco(): PDO
 {
-    $host = getenv('TPP_DB_HOST') ?: 'localhost';
-    $porta = getenv('TPP_DB_PORT') ?: '3306';
-    $banco = getenv('TPP_DB_NAME') ?: 'tudoprapet';
-    $usuario = getenv('TPP_DB_USER') ?: 'root';
-    $senhaAmbiente = getenv('TPP_DB_PASSWORD');
-    $senha = $senhaAmbiente === false ? '' : $senhaAmbiente;
+    $host = 'dadosplanilha.mysql.dbaas.com.br';
+    $porta = '3306';
+    $banco = 'dadosplanilha';
+    $usuario = 'dadosplanilha';
+    $senha = 'Sf1499@';
 
     $dsn = sprintf(
         'mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',

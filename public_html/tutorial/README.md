@@ -1,573 +1,172 @@
-# Tutorial: transformar o cadastro fictício em PHP
+# TudoPraPet: cadastro funcional com PHP e MySQL
 
-Este guia foi escrito a partir da análise da pasta `public_html/dados`. A versão
-funcional foi criada em `public_html/tutorial`: o formulário de `cadastro.html`
-grava clientes, pets e planos em um banco MySQL usando PHP, sem alterar o
-projeto original.
+Esta pasta é uma cópia funcional de `public_html/dados`. A pasta original não
+foi alterada. O cadastro deixou de ser uma simulação em JavaScript e agora salva
+o tutor, seus pets e as assinaturas no banco MySQL.
 
-## Antes de executar
+## Estado da instalação
 
-A implementação já está pronta. Para ligá-la ao banco:
+O banco de testes `dadosplanilha` já está configurado em
+`config/banco.php`. A conexão foi testada com sucesso no MySQL 5.7 da
+hospedagem, e a coluna necessária `pets.nascimento` já foi adicionada.
 
-1. Ative Apache e MySQL no XAMPP.
-2. Importe `sql/estrutura.sql` pelo phpMyAdmin.
-3. Confira os dados de conexão em `config/banco.php`.
-4. Verifique se a extensão PHP `pdo_mysql` está habilitada.
-5. Abra `http://localhost/SFCO/public_html/tutorial/login.html`.
+Para publicar, envie o conteúdo da pasta `tutorial` ao servidor. O PHP precisa
+ser versão 8 ou superior e ter a extensão `pdo_mysql` habilitada.
 
-Os valores padrão da conexão são banco `tudoprapet`, usuário `root`, senha
-vazia, host `localhost` e porta `3306`. Na hospedagem, você pode definir
-`TPP_DB_HOST`, `TPP_DB_PORT`, `TPP_DB_NAME`, `TPP_DB_USER` e
-`TPP_DB_PASSWORD`, sem gravar a senha diretamente no projeto.
-
-## 1. Como o cadastro funciona atualmente
-
-Os arquivos envolvidos são:
-
-- `dados/cadastro.html`: contém o formulário do tutor e o template usado para
-  adicionar um ou mais pets;
-- `dados/js/cadastro.js`: cria os blocos de pets, aplica máscaras, valida os
-  campos e intercepta o envio do formulário;
-- `dados/js/data.js`: contém somente dados fictícios usados nas outras telas;
-- `dados/js/auth.js`: controla uma autenticação fictícia pelo `sessionStorage`.
-
-No final de `dados/js/cadastro.js`, o evento `submit` usa
-`event.preventDefault()`. Depois da validação, ele apenas mostra a mensagem de
-sucesso e executa `form.reset()`. Nenhum dado é enviado para um servidor.
-
-Para transformar isso em um cadastro real, o fluxo deve ficar assim:
-
-1. O JavaScript valida e reúne os campos.
-2. O navegador envia JSON para um arquivo PHP usando `fetch`.
-3. O PHP valida novamente os dados.
-4. O PHP abre uma transação no MySQL.
-5. O cliente é inserido e seu ID é recuperado.
-6. Cada pet é inserido ligado ao cliente.
-7. O plano de cada pet é inserido ligado ao pet.
-8. Se qualquer operação falhar, toda a transação é desfeita.
-
-> A validação do JavaScript melhora a experiência do usuário, mas não protege o
-> sistema. Todos os dados precisam ser validados novamente no PHP.
-
-## 2. Estrutura recomendada
-
-Quando você for fazer a conversão, crie esta estrutura dentro de `dados`:
+## Arquivos importantes
 
 ```text
-dados/
+tutorial/
 ├── api/
-│   └── cadastrar.php
+│   └── cadastrar.php       recebe, valida e grava o cadastro
 ├── config/
-│   └── banco.php
+│   └── banco.php           conexão PDO com o banco de testes
 ├── sql/
-│   └── estrutura.sql
-├── cadastro.html
-└── js/
-    └── cadastro.js
+│   ├── estrutura.sql       estrutura para uma instalação vazia
+│   └── migrar_banco_existente.php
+├── js/
+│   └── cadastro.js         valida e envia o formulário com fetch
+└── cadastro.html           formulário do tutor, pets e planos
 ```
 
-Em produção, o ideal é deixar a configuração do banco fora de `public_html`.
-Para um exercício local com XAMPP, a estrutura acima é suficiente, desde que
-o arquivo de configuração não seja publicado em um repositório público.
+As pastas `config` e `sql` possuem `.htaccess` para bloquear acesso HTTP
+direto. Isso não impede o PHP de carregar internamente a conexão.
 
-## 3. Criar o banco de dados
+## Estrutura usada no banco
 
-No phpMyAdmin, abra a aba **SQL** e execute:
+O sistema aproveita a estrutura que já existia na hospedagem:
 
-```sql
-CREATE DATABASE tudoprapet
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
+- `clientes`: dados do tutor;
+- `pets`: dados dos animais e o ID do cliente responsável;
+- `planos`: catálogo com Bronze, Prata e Ouro;
+- `assinaturas`: ligação entre um pet e um plano, com início e vencimento;
+- `usuarios`: tabela já existente, ainda não usada pelo login demonstrativo.
 
-USE tudoprapet;
+O relacionamento do cadastro é:
 
-CREATE TABLE clientes (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(150) NOT NULL,
-    cpf CHAR(11) NOT NULL UNIQUE,
-    telefone VARCHAR(11) NOT NULL,
-    email VARCHAR(190) NOT NULL,
-    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
-
-CREATE TABLE pets (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    cliente_id BIGINT UNSIGNED NOT NULL,
-    nome VARCHAR(100) NOT NULL,
-    especie VARCHAR(30) NOT NULL,
-    raca VARCHAR(100) NOT NULL,
-    sexo ENUM('Macho', 'Femea') NOT NULL,
-    idade TINYINT UNSIGNED NULL,
-    nascimento DATE NULL,
-    peso DECIMAL(6,2) NULL,
-    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_pets_cliente
-      FOREIGN KEY (cliente_id) REFERENCES clientes(id)
-      ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-CREATE TABLE planos (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    pet_id BIGINT UNSIGNED NOT NULL,
-    nome ENUM('Bronze', 'Prata', 'Ouro') NOT NULL,
-    data_inicio DATE NOT NULL,
-    data_vencimento DATE NOT NULL,
-    status ENUM('Ativo', 'Pendente', 'Vencido', 'Cancelado')
-      NOT NULL DEFAULT 'Ativo',
-    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_planos_pet
-      FOREIGN KEY (pet_id) REFERENCES pets(id)
-      ON DELETE CASCADE
-) ENGINE=InnoDB;
+```text
+clientes 1 ─── N pets 1 ─── N assinaturas N ─── 1 planos
 ```
 
-O CPF é armazenado somente com 11 números. A máscara `000.000.000-00` continua
-aparecendo na tela, mas deve ser removida antes da gravação.
+Um plano não é recriado a cada cadastro. O PHP procura o plano pelo nome e
+salva seu ID em `assinaturas`.
 
-## 4. Fazer a conexão PHP com PDO
+## Como o envio funciona
 
-O conteúdo de `dados/config/banco.php` pode ser:
+O evento `submit` em `js/cadastro.js` executa estas etapas:
 
-```php
-<?php
-declare(strict_types=1);
+1. Impede o envio HTML tradicional com `preventDefault()`.
+2. Valida os campos visíveis.
+3. Percorre todos os blocos `[data-pet-item]`.
+4. Monta um objeto com tutor e pets.
+5. Converte o objeto para JSON.
+6. Envia para `api/cadastrar.php` usando `fetch`.
+7. Só limpa o formulário depois de receber HTTP `201` do servidor.
+8. Mantém os dados preenchidos e mostra a mensagem se ocorrer um erro.
 
-function conectarBanco(): PDO
+O corpo enviado tem este formato:
+
+```json
 {
-    $host = 'localhost';
-    $porta = '3306';
-    $banco = 'tudoprapet';
-    $usuario = 'root';
-    $senha = ''; // No XAMPP local, normalmente começa vazia.
-
-    $dsn = "mysql:host={$host};port={$porta};dbname={$banco};charset=utf8mb4";
-
-    return new PDO($dsn, $usuario, $senha, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    ]);
-}
-```
-
-No servidor de hospedagem, substitua usuário, senha e nome do banco pelos dados
-fornecidos no painel da hospedagem. Não mostre erros ou senhas do banco na
-resposta enviada ao navegador.
-
-## 5. Dar nomes aos campos dinâmicos
-
-Os campos do tutor já possuem `name`, mas os campos de pet usam apenas
-`data-field`. Isso funciona porque o JavaScript vai montar um objeto JSON.
-Não é necessário transformar esses campos em `pets[0][nome]`, desde que todos
-sejam coletados antes do `fetch`.
-
-Acrescente esta função em `dados/js/cadastro.js`, antes do
-`document.addEventListener`:
-
-```javascript
-function montarDadosCadastro(form, petsContainer) {
-  const pets = Array.from(
-    petsContainer.querySelectorAll('[data-pet-item]')
-  ).map((bloco) => {
-    const tipoIdade = bloco
-      .querySelector('[data-field="idade-tipo"]:checked').value;
-
-    return {
-      nome: bloco.querySelector('[data-field="nome"]').value.trim(),
-      especie: bloco.querySelector('[data-field="especie"]').value,
-      raca: bloco.querySelector('[data-field="raca"]').value.trim(),
-      sexo: bloco.querySelector('[data-field="sexo"]').value,
-      tipoIdade,
-      idade: tipoIdade === 'idade'
-        ? bloco.querySelector('[data-field="idade"]').value
-        : null,
-      nascimento: tipoIdade === 'nascimento'
-        ? bloco.querySelector('[data-field="nascimento"]').value
-        : null,
-      peso: bloco.querySelector('[data-field="peso"]').value || null,
-      plano: bloco.querySelector('[data-field="plano"]').value,
-      dataInicio: bloco.querySelector('[data-field="data-inicio"]').value,
-      dataVencimento: bloco
-        .querySelector('[data-field="data-vencimento"]').value,
-    };
-  });
-
-  return {
-    nome: form.querySelector('#campo-nome').value.trim(),
-    cpf: form.querySelector('#campo-cpf').value,
-    telefone: form.querySelector('#campo-telefone').value,
-    email: form.querySelector('#campo-email').value.trim(),
-    pets,
-  };
-}
-```
-
-## 6. Criar o endpoint de cadastro
-
-O arquivo `dados/api/cadastrar.php` recebe o JSON, valida os dados e grava tudo
-em uma única transação:
-
-```php
-<?php
-declare(strict_types=1);
-
-header('Content-Type: application/json; charset=utf-8');
-header('X-Content-Type-Options: nosniff');
-
-require_once dirname(__DIR__) . '/config/banco.php';
-
-function responder(int $status, array $conteudo): never
-{
-    http_response_code($status);
-    echo json_encode($conteudo, JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-function somenteDigitos(mixed $valor): string
-{
-    return preg_replace('/\D+/', '', (string) $valor) ?? '';
-}
-
-function texto(mixed $valor): string
-{
-    return trim((string) $valor);
-}
-
-function dataValida(string $data): bool
-{
-    $objeto = DateTimeImmutable::createFromFormat('!Y-m-d', $data);
-    return $objeto !== false && $objeto->format('Y-m-d') === $data;
-}
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    responder(405, ['sucesso' => false, 'mensagem' => 'Método não permitido.']);
-}
-
-$entrada = json_decode(file_get_contents('php://input'), true);
-
-if (!is_array($entrada)) {
-    responder(400, ['sucesso' => false, 'mensagem' => 'JSON inválido.']);
-}
-
-$nome = texto($entrada['nome'] ?? '');
-$cpf = somenteDigitos($entrada['cpf'] ?? '');
-$telefone = somenteDigitos($entrada['telefone'] ?? '');
-$email = texto($entrada['email'] ?? '');
-$pets = $entrada['pets'] ?? null;
-
-$erros = [];
-
-if ($nome === '' || mb_strlen($nome) > 150) {
-    $erros[] = 'Informe um nome válido.';
-}
-if (strlen($cpf) !== 11) {
-    $erros[] = 'Informe um CPF com 11 dígitos.';
-}
-if (strlen($telefone) < 10 || strlen($telefone) > 11) {
-    $erros[] = 'Informe um telefone válido com DDD.';
-}
-if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 190) {
-    $erros[] = 'Informe um e-mail válido.';
-}
-if (!is_array($pets) || count($pets) < 1 || count($pets) > 20) {
-    $erros[] = 'Cadastre entre 1 e 20 pets.';
-}
-
-$petsValidados = [];
-$especies = ['Cachorro', 'Gato', 'Ave', 'Roedor', 'Outro'];
-$sexos = ['Macho', 'Femea'];
-$planos = ['Bronze', 'Prata', 'Ouro'];
-
-if (is_array($pets)) {
-    foreach ($pets as $indice => $pet) {
-        if (!is_array($pet)) {
-            $erros[] = 'Os dados de um pet são inválidos.';
-            continue;
-        }
-
-        $numero = $indice + 1;
-        $petNome = texto($pet['nome'] ?? '');
-        $especie = texto($pet['especie'] ?? '');
-        $raca = texto($pet['raca'] ?? '');
-        $sexo = texto($pet['sexo'] ?? '');
-        $tipoIdade = texto($pet['tipoIdade'] ?? '');
-        $idade = $pet['idade'] ?? null;
-        $nascimento = texto($pet['nascimento'] ?? '');
-        $peso = $pet['peso'] ?? null;
-        $plano = texto($pet['plano'] ?? '');
-        $inicio = texto($pet['dataInicio'] ?? '');
-        $vencimento = texto($pet['dataVencimento'] ?? '');
-
-        if ($petNome === '' || mb_strlen($petNome) > 100) {
-            $erros[] = "Informe um nome válido para o pet {$numero}.";
-        }
-        if (!in_array($especie, $especies, true)) {
-            $erros[] = "Espécie inválida no pet {$numero}.";
-        }
-        if ($raca === '' || mb_strlen($raca) > 100) {
-            $erros[] = "Informe a raça do pet {$numero}.";
-        }
-        if (!in_array($sexo, $sexos, true)) {
-            $erros[] = "Sexo inválido no pet {$numero}.";
-        }
-
-        $idadeBanco = null;
-        $nascimentoBanco = null;
-        if (
-            $tipoIdade === 'idade'
-            && filter_var(
-                $idade,
-                FILTER_VALIDATE_INT,
-                ['options' => ['min_range' => 0, 'max_range' => 40]]
-            ) !== false
-        ) {
-            $idadeBanco = (int) $idade;
-        } elseif (
-            $tipoIdade === 'nascimento'
-            && dataValida($nascimento)
-            && $nascimento <= date('Y-m-d')
-        ) {
-            $nascimentoBanco = $nascimento;
-        } else {
-            $erros[] = "Idade ou nascimento inválido no pet {$numero}.";
-        }
-
-        $pesoBanco = null;
-        if ($peso !== null && $peso !== '') {
-            if (!is_numeric($peso) || (float) $peso <= 0 || (float) $peso > 9999) {
-                $erros[] = "Peso inválido no pet {$numero}.";
-            } else {
-                $pesoBanco = (float) $peso;
-            }
-        }
-
-        if (!in_array($plano, $planos, true)) {
-            $erros[] = "Plano inválido no pet {$numero}.";
-        }
-        if (!dataValida($inicio)) {
-            $erros[] = "Data de início inválida no pet {$numero}.";
-        }
-        if (!dataValida($vencimento) || $vencimento < $inicio) {
-            $erros[] = "Data de vencimento inválida no pet {$numero}.";
-        }
-
-        $petsValidados[] = [
-            'nome' => $petNome,
-            'especie' => $especie,
-            'raca' => $raca,
-            'sexo' => $sexo,
-            'idade' => $idadeBanco,
-            'nascimento' => $nascimentoBanco,
-            'peso' => $pesoBanco,
-            'plano' => $plano,
-            'inicio' => $inicio,
-            'vencimento' => $vencimento,
-        ];
+  "nome": "Ana Ferreira",
+  "cpf": "529.982.247-25",
+  "telefone": "(11) 99999-9999",
+  "email": "ana@example.com",
+  "pets": [
+    {
+      "nome": "Thor",
+      "especie": "Cachorro",
+      "raca": "Vira-lata",
+      "sexo": "Macho",
+      "tipoIdade": "idade",
+      "idade": "3",
+      "nascimento": null,
+      "peso": "10.5",
+      "plano": "Bronze",
+      "dataInicio": "2026-07-31",
+      "dataVencimento": "2026-08-31"
     }
-}
-
-if ($erros !== []) {
-    responder(422, [
-        'sucesso' => false,
-        'mensagem' => 'Revise os dados enviados.',
-        'erros' => $erros,
-    ]);
-}
-
-$pdo = null;
-
-try {
-    $pdo = conectarBanco();
-    $pdo->beginTransaction();
-
-    $inserirCliente = $pdo->prepare(
-        'INSERT INTO clientes (nome, cpf, telefone, email)
-         VALUES (:nome, :cpf, :telefone, :email)'
-    );
-    $inserirCliente->execute([
-        'nome' => $nome,
-        'cpf' => $cpf,
-        'telefone' => $telefone,
-        'email' => $email,
-    ]);
-    $clienteId = (int) $pdo->lastInsertId();
-
-    $inserirPet = $pdo->prepare(
-        'INSERT INTO pets
-          (cliente_id, nome, especie, raca, sexo, idade, nascimento, peso)
-         VALUES
-          (:cliente_id, :nome, :especie, :raca, :sexo, :idade, :nascimento, :peso)'
-    );
-
-    $inserirPlano = $pdo->prepare(
-        'INSERT INTO planos (pet_id, nome, data_inicio, data_vencimento)
-         VALUES (:pet_id, :nome, :data_inicio, :data_vencimento)'
-    );
-
-    foreach ($petsValidados as $pet) {
-        $inserirPet->execute([
-            'cliente_id' => $clienteId,
-            'nome' => $pet['nome'],
-            'especie' => $pet['especie'],
-            'raca' => $pet['raca'],
-            'sexo' => $pet['sexo'],
-            'idade' => $pet['idade'],
-            'nascimento' => $pet['nascimento'],
-            'peso' => $pet['peso'],
-        ]);
-        $petId = (int) $pdo->lastInsertId();
-
-        $inserirPlano->execute([
-            'pet_id' => $petId,
-            'nome' => $pet['plano'],
-            'data_inicio' => $pet['inicio'],
-            'data_vencimento' => $pet['vencimento'],
-        ]);
-    }
-
-    $pdo->commit();
-
-    responder(201, [
-        'sucesso' => true,
-        'mensagem' => 'Cliente e pets cadastrados com sucesso.',
-        'clienteId' => $clienteId,
-    ]);
-} catch (PDOException $erro) {
-    if ($pdo instanceof PDO && $pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
-
-    // O código 1062 do MySQL representa uma chave única duplicada.
-    if (($erro->errorInfo[1] ?? null) === 1062) {
-        responder(409, [
-            'sucesso' => false,
-            'mensagem' => 'Este CPF já está cadastrado.',
-        ]);
-    }
-
-    error_log($erro->getMessage());
-    responder(500, [
-        'sucesso' => false,
-        'mensagem' => 'Não foi possível concluir o cadastro.',
-    ]);
+  ]
 }
 ```
 
-As consultas preparadas evitam injeção de SQL. A transação evita salvar somente
-uma parte do cadastro: ou cliente, pets e planos são gravados juntos, ou nada é.
+## O que o PHP valida
 
-## 7. Trocar o cadastro fictício pelo envio ao PHP
+O navegador não é considerado uma fonte confiável. O endpoint repete as
+validações no servidor:
 
-No final de `dados/js/cadastro.js`, localize:
+- método HTTP e `Content-Type`;
+- tamanho máximo da requisição;
+- JSON válido;
+- nome e limites de caracteres;
+- dígitos verificadores do CPF;
+- telefone com DDD;
+- formato do e-mail;
+- quantidade de pets;
+- espécie, sexo e plano dentro das opções aceitas;
+- idade entre 0 e 40 ou nascimento não futuro;
+- peso positivo;
+- datas válidas e vencimento posterior ao início.
 
-```javascript
-form.addEventListener('submit', (event) => {
-```
+As máscaras de CPF e telefone são removidas antes da gravação.
 
-Troque o evento inteiro por:
+## Por que é usada uma transação
 
-```javascript
-form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  mensagemSucesso.hidden = true;
+O cadastro grava informações em três pontos diferentes. O endpoint chama
+`beginTransaction()` antes de inserir os dados e `commit()` somente no final.
 
-  const clienteValido = validarCliente(form);
-  let petsValidos = true;
+Se a gravação de qualquer pet ou assinatura falhar, `rollBack()` desfaz também
+o cliente e os pets anteriores. Assim, o banco não fica com um cadastro pela
+metade.
 
-  petsContainer.querySelectorAll('[data-pet-item]').forEach((bloco) => {
-    if (!validarPet(bloco)) petsValidos = false;
-  });
+As consultas usam `PDO::prepare()` e parâmetros, evitando concatenar os valores
+recebidos diretamente no SQL.
 
-  if (!clienteValido || !petsValidos) return;
+## Respostas do endpoint
 
-  const botaoEnviar = form.querySelector('[type="submit"]');
-  const textoOriginal = botaoEnviar.innerHTML;
-  botaoEnviar.disabled = true;
-  botaoEnviar.textContent = 'Cadastrando...';
+- `201`: cadastro concluído;
+- `409`: CPF já cadastrado;
+- `422`: campos inválidos;
+- `405`: método HTTP incorreto;
+- `415`: conteúdo diferente de JSON;
+- `500`: falha inesperada no banco.
 
-  try {
-    const resposta = await fetch('api/cadastrar.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(montarDadosCadastro(form, petsContainer)),
-    });
+Os detalhes internos do banco são enviados apenas ao log do PHP. O navegador
+recebe uma mensagem simples.
 
-    const resultado = await resposta.json();
+## Instalação em outro banco vazio
 
-    if (!resposta.ok) {
-      throw new Error(resultado.mensagem || 'Não foi possível cadastrar.');
-    }
+1. Crie um banco MySQL.
+2. Importe `sql/estrutura.sql` pelo phpMyAdmin.
+3. Edite host, porta, banco, usuário e senha em `config/banco.php`.
+4. Confirme que o servidor possui PHP 8 e `pdo_mysql`.
+5. Abra `login.html` pelo endereço HTTP do servidor.
 
-    mensagemSucesso.querySelector('span').textContent = resultado.mensagem;
-    mensagemSucesso.hidden = false;
-    form.reset();
-    petsContainer.innerHTML = '';
-    adicionarPet(petsContainer, templatePet);
-  } catch (erro) {
-    alert(erro.message);
-  } finally {
-    botaoEnviar.disabled = false;
-    botaoEnviar.innerHTML = textoOriginal;
-    if (window.lucide) lucide.createIcons();
-  }
-});
-```
+Não abra `cadastro.html` com clique duplo, porque PHP só funciona quando a
+página é servida por Apache, Nginx ou outro servidor HTTP configurado com PHP.
 
-O formulário só deve ser apagado depois que o servidor confirmar o cadastro.
-Se houver erro de rede, CPF repetido ou falha no banco, os dados digitados
-permanecem na tela.
+## Teste realizado
 
-## 8. Sobre a autenticação atual
+Foi executado um cadastro completo no banco remoto com:
 
-O projeto usa:
+- um cliente;
+- um pet;
+- uma assinatura Bronze;
+- data de início e vencimento.
 
-```javascript
-sessionStorage.getItem('tpp-auth')
-```
+O endpoint respondeu com HTTP `201`, e uma consulta confirmou os
+relacionamentos entre `clientes`, `pets`, `assinaturas` e `planos`. O registro
+artificial criado para esse teste foi removido em seguida.
 
-Isso não é autenticação segura, pois qualquer pessoa pode alterar o valor pelo
-console do navegador. Para um sistema real, o login também precisa ser
-convertido para PHP, usando:
+## Login e primeira troca de senha
 
-- tabela de usuários;
-- senhas armazenadas com `password_hash`;
-- conferência com `password_verify`;
-- sessão iniciada por `session_start`;
-- verificação da sessão em todos os endpoints PHP.
+O login agora consulta a tabela `usuarios` por meio de `api/login.php`. As
+senhas são armazenadas com `password_hash()` e conferidas com
+`password_verify()`.
 
-O cadastro do tutor pode ser aprendido e testado primeiro, mas não publique o
-sistema com dados reais enquanto a autenticação continuar no `sessionStorage`.
+Quando `usuarios.trocar_senha` vale `1`, o usuário é enviado para
+`trocar-senha.html`. Depois que `api/alterar-senha.php` salva a nova senha, o
+campo passa para `0` e o painel é liberado. O logout também encerra a sessão PHP.
 
-## 9. Como testar no XAMPP
-
-1. Coloque o projeto dentro de `C:\xampp\htdocs`.
-2. Inicie **Apache** e **MySQL** no painel do XAMPP.
-3. Crie o banco e as tabelas pelo phpMyAdmin.
-4. Confira usuário e senha em `config/banco.php`.
-5. Acesse o projeto por `http://localhost/...`; não abra o HTML com clique duplo.
-6. Entre no painel, preencha o cadastro e envie.
-7. No phpMyAdmin, confira as tabelas `clientes`, `pets` e `planos`.
-8. Tente cadastrar o mesmo CPF novamente e confirme que o sistema informa a
-   duplicidade sem criar registros parciais.
-
-Também teste:
-
-- um cliente com dois ou mais pets;
-- idade igual a zero;
-- data de nascimento futura;
-- vencimento anterior ao início;
-- telefone com 10 e com 11 dígitos;
-- interrupção do MySQL durante o envio;
-- campos enviados manualmente fora das opções permitidas.
-
-## 10. Próxima etapa
-
-Depois que o cadastro estiver persistindo, `clientes.js`, `pets.js`,
-`planos.js` e `data.js` ainda continuarão exibindo dados fictícios. A próxima
-conversão é criar endpoints PHP de consulta e substituir os arrays `MOCK_*`
-por chamadas `fetch`. Essa mudança é separada do cadastro e deve ser feita
-somente depois de confirmar que as três tabelas estão recebendo os dados
-corretamente.
+O endpoint de cadastro exige uma sessão autenticada e impede o cadastro
+enquanto a troca obrigatória estiver pendente.

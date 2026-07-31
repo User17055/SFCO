@@ -6,6 +6,7 @@ header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
 
 require_once dirname(__DIR__) . '/config/banco.php';
+require_once dirname(__DIR__) . '/config/sessao.php';
 
 function responder(int $status, array $conteudo): never
 {
@@ -52,6 +53,21 @@ function cpfValido(string $cpf): bool
     }
 
     return true;
+}
+
+iniciarSessao();
+
+if (!isset($_SESSION['usuario_id'])) {
+    responder(401, [
+        'sucesso' => false,
+        'mensagem' => 'Entre novamente para realizar o cadastro.',
+    ]);
+}
+if (!empty($_SESSION['trocar_senha'])) {
+    responder(403, [
+        'sucesso' => false,
+        'mensagem' => 'Troque sua senha antes de realizar o cadastro.',
+    ]);
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -229,6 +245,21 @@ try {
     $pdo = conectarBanco();
     $pdo->beginTransaction();
 
+    $consultarCpf = $pdo->prepare(
+        "SELECT id
+           FROM clientes
+          WHERE REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = :cpf
+          LIMIT 1"
+    );
+    $consultarCpf->execute(['cpf' => $cpf]);
+    if ($consultarCpf->fetchColumn() !== false) {
+        $pdo->rollBack();
+        responder(409, [
+            'sucesso' => false,
+            'mensagem' => 'Este CPF ja esta cadastrado.',
+        ]);
+    }
+
     $inserirCliente = $pdo->prepare(
         'INSERT INTO clientes (nome, cpf, telefone, email)
          VALUES (:nome, :cpf, :telefone, :email)'
@@ -248,9 +279,13 @@ try {
           (:cliente_id, :nome, :especie, :raca, :sexo, :idade, :nascimento, :peso)'
     );
 
-    $inserirPlano = $pdo->prepare(
-        'INSERT INTO planos (pet_id, nome, data_inicio, data_vencimento)
-         VALUES (:pet_id, :nome, :data_inicio, :data_vencimento)'
+    $consultarPlano = $pdo->prepare(
+        'SELECT id FROM planos WHERE nome = :nome ORDER BY id LIMIT 1'
+    );
+
+    $inserirAssinatura = $pdo->prepare(
+        'INSERT INTO assinaturas (pet_id, plano_id, data_inicio, data_vencimento)
+         VALUES (:pet_id, :plano_id, :data_inicio, :data_vencimento)'
     );
 
     foreach ($petsValidados as $pet) {
@@ -266,9 +301,15 @@ try {
         ]);
         $petId = (int) $pdo->lastInsertId();
 
-        $inserirPlano->execute([
+        $consultarPlano->execute(['nome' => $pet['plano']]);
+        $planoId = $consultarPlano->fetchColumn();
+        if ($planoId === false) {
+            throw new RuntimeException('Plano nao encontrado no banco.');
+        }
+
+        $inserirAssinatura->execute([
             'pet_id' => $petId,
-            'nome' => $pet['plano'],
+            'plano_id' => (int) $planoId,
             'data_inicio' => $pet['inicio'],
             'data_vencimento' => $pet['vencimento'],
         ]);
@@ -281,12 +322,12 @@ try {
         'mensagem' => 'Cliente e pets cadastrados com sucesso!',
         'clienteId' => $clienteId,
     ]);
-} catch (PDOException $erro) {
+} catch (Throwable $erro) {
     if ($pdo instanceof PDO && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
 
-    if (($erro->errorInfo[1] ?? null) === 1062) {
+    if ($erro instanceof PDOException && ($erro->errorInfo[1] ?? null) === 1062) {
         responder(409, [
             'sucesso' => false,
             'mensagem' => 'Este CPF ja esta cadastrado.',

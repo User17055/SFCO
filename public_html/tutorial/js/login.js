@@ -1,8 +1,8 @@
 /**
  * Logica da tela de login.
- * Autenticacao ficticia: qualquer e-mail valido e senha preenchida sao aceitos.
- * Ao autenticar com sucesso, grava um flag em sessionStorage e libera o acesso
- * ao restante do site (o guard em cada pagina checa esse mesmo flag).
+ * Autenticacao pelo PHP e pela tabela usuarios do MySQL.
+ * Contas marcadas para troca de senha sao direcionadas para a tela obrigatoria
+ * antes de receber o flag que libera as paginas do painel.
  */
 
 function definirErroCampoLogin(campo, mensagem) {
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.lucide) lucide.createIcons();
   });
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(campoEmail.value.trim());
@@ -45,7 +45,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!emailValido || !senhaValida) return;
 
-    sessionStorage.setItem('tpp-auth', '1');
-    window.location.href = 'index.html';
+    const botaoEntrar = form.querySelector('[type="submit"]');
+    const conteudoOriginal = botaoEntrar.innerHTML;
+    botaoEntrar.disabled = true;
+    botaoEntrar.textContent = 'Entrando...';
+
+    try {
+      const resposta = await fetch('api/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          email: campoEmail.value.trim(),
+          senha: campoSenha.value,
+        }),
+      });
+      const resultado = await resposta.json();
+
+      if (!resposta.ok) {
+        throw new Error(resultado.mensagem || 'Nao foi possivel entrar.');
+      }
+
+      if (resultado.trocarSenha) {
+        sessionStorage.removeItem('tpp-auth');
+        window.location.href = 'trocar-senha.html';
+        return;
+      }
+
+      sessionStorage.setItem('tpp-auth', '1');
+      window.location.href = 'index.html';
+    } catch (erro) {
+      definirErroCampoLogin(campoSenha, erro.message);
+    } finally {
+      botaoEntrar.disabled = false;
+      botaoEntrar.innerHTML = conteudoOriginal;
+      if (window.lucide) lucide.createIcons();
+    }
   });
 });

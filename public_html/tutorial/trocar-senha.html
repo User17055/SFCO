@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trocar senha · TudoPraPet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="font-sans tela-login">
+<div class="min-h-screen flex items-center justify-center px-4 py-10" style="background:var(--color-primary);">
+  <div class="w-full max-w-[460px]">
+    <div class="text-center mb-7">
+      <span class="font-extrabold text-3xl tracking-tight">
+        <span style="color:var(--color-accent);">Tudo</span><span class="text-white">Pra</span><span style="color:var(--color-accent);">Pet</span>
+      </span>
+    </div>
+
+    <div class="cartao-login animar-entrada p-8 sm:p-10">
+      <h1 class="text-xl font-semibold text-slate-900 text-center">Crie uma nova senha</h1>
+      <p class="text-xs text-slate-500 text-center mt-1 mb-7">A troca é obrigatória no primeiro acesso</p>
+
+      <form id="form-trocar-senha" novalidate>
+        <div class="campo-form">
+          <label for="campo-nova-senha">Nova senha</label>
+          <input type="password" id="campo-nova-senha" autocomplete="new-password" minlength="8" required>
+          <span class="campo-erro"></span>
+        </div>
+
+        <div class="campo-form">
+          <label for="campo-confirmar-senha">Confirme a nova senha</label>
+          <input type="password" id="campo-confirmar-senha" autocomplete="new-password" minlength="8" required>
+          <span class="campo-erro"></span>
+        </div>
+
+        <button type="submit" class="botao-entrar">
+          <i data-lucide="key-round" class="w-4 h-4"></i>
+          Salvar nova senha
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="js/trocar-senha.js"></script>
+</body>
+</html>

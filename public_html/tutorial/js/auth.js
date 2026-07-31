@@ -7,7 +7,12 @@
 
 const CHAVE_AUTH = 'tpp-auth';
 
-function sair() {
+async function sair() {
+  try {
+    await fetch('api/logout.php', { method: 'POST', keepalive: true });
+  } catch (_) {
+    // O flag local ainda e removido caso a rede esteja indisponivel.
+  }
   sessionStorage.removeItem(CHAVE_AUTH);
   window.location.href = 'login.html';
 }
