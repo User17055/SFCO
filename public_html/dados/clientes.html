@@ -1,10 +1,323 @@
-<!doctype html><html lang="pt-BR"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clientes | Planos Pet</title>
-<script>if(sessionStorage.getItem('tpp-auth')!=='1')location.replace('login.html')</script><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="css/style.css">
-</head><body class="bg-slate-50 text-slate-800"><div class="min-h-screen lg:flex">
-<aside class="bg-slate-900 text-white p-5 lg:w-64"><div class="text-xl font-bold mb-7">Planos Pet</div><nav class="grid gap-2 text-sm"><a class="hover:bg-slate-800 rounded-lg px-3 py-2" href="index.html">Visao geral</a><a class="bg-blue-600 rounded-lg px-3 py-2" href="clientes.html">Clientes</a><a class="hover:bg-slate-800 rounded-lg px-3 py-2" href="pets.html">Pets</a><a class="hover:bg-slate-800 rounded-lg px-3 py-2" href="planos.html">Planos</a></nav><button id="botao-sair" class="mt-8 text-sm text-slate-300">Sair</button></aside>
-<main class="flex-1 p-5 lg:p-8 min-w-0"><header class="flex flex-wrap justify-between gap-3 mb-5"><div><h1 class="text-2xl font-bold">Clientes</h1><p class="text-sm text-slate-500">Edite os dados e veja pets, planos e projecao por pessoa.</p></div><button id="novo-cliente" class="botao-primario">Novo cliente</button></header>
-<div class="painel"><div class="flex flex-wrap gap-3 mb-4"><input id="busca-clientes" class="campo flex-1 min-w-56" placeholder="Buscar por nome, telefone, CPF ou plano"><span id="total-clientes" class="text-sm text-slate-500 self-center"></span></div><div class="overflow-x-auto"><table class="tabela"><thead><tr><th>Cliente</th><th>Contato</th><th>Pets</th><th>Planos ativos</th><th>Projecao</th><th>Acoes</th></tr></thead><tbody id="clients-body"></tbody></table></div></div>
-</main></div>
-<dialog id="modal-cliente" class="modal"><form id="form-cliente" class="modal-conteudo"><div class="flex justify-between"><h2 id="titulo-cliente" class="text-lg font-bold">Cliente</h2><button type="button" data-fechar>✕</button></div><input type="hidden" name="id"><label>Nome<input class="campo" name="nome" required maxlength="150"></label><div class="grid sm:grid-cols-2 gap-3"><label>E-mail<input class="campo" name="email" type="email"></label><label>Telefone<input class="campo" name="telefone"></label><label>CPF<input class="campo" name="cpf"></label></div><label>Observacoes<textarea class="campo" name="observacoes" rows="3"></textarea></label><div id="erro-cliente" class="text-sm text-red-700"></div><div class="flex justify-end gap-2"><button type="button" class="botao-secundario" data-fechar>Cancelar</button><button class="botao-primario">Salvar</button></div></form></dialog>
-<script src="js/auth.js"></script><script src="js/layout.js"></script><script src="js/components.js"></script><script src="js/clientes.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<script>
+  if (sessionStorage.getItem('tpp-auth') !== '1') {
+    window.location.replace('login.html');
+  }
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clientes · TudoPraPet</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Poppins', 'sans-serif'] },
+        colors: {
+          brand: { 50: '#eaf1fb', 500: '#2f5fa8', 600: '#245095', 700: '#1c3f78' },
+          accent: { 400: '#f4d571', 500: '#f1c744', 600: '#d9ad2a' },
+        },
+      },
+    },
+  };
+</script>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="font-sans">
+
+<div class="estrutura-app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="barra-lateral">
+    <div class="px-4 pt-6 pb-3">
+      <span class="font-extrabold text-2xl tracking-tight">
+        <span style="color:var(--color-accent);">Tudo</span><span class="text-white">Pra</span><span style="color:var(--color-accent);">Pet</span>
+      </span>
+    </div>
+
+    <div class="px-3 pb-3">
+      <div class="relative">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--color-primary);"></i>
+        <input type="text"
+          class="w-full pl-9 pr-3 py-2 text-sm rounded-full outline-none transition-shadow focus:ring-2"
+          style="background:#ffffff; color:var(--color-text-primary); border:1px solid rgba(255,255,255,0.16); --tw-ring-color:rgba(241,199,68,0.6);">
+      </div>
+    </div>
+
+    <div class="painel-menu">
+      <nav class="flex-1 px-4 pt-4 pb-2 overflow-y-auto">
+        <p class="text-[11px] font-semibold uppercase tracking-wider mb-1 text-slate-400">Menu</p>
+        <div>
+          <a href="index.html" class="link-menu">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="clientes.html" class="link-menu ativo">
+            <i data-lucide="users"></i>
+            <span>Clientes</span>
+          </a>
+          <a href="pets.html" class="link-menu">
+            <i data-lucide="paw-print"></i>
+            <span>Pets</span>
+          </a>
+          <a href="planos.html" class="link-menu">
+            <i data-lucide="clipboard-list"></i>
+            <span>Planos</span>
+          </a>
+          <a href="cadastro.html" class="link-menu">
+            <i data-lucide="user-plus"></i>
+            <span>Cadastro</span>
+          </a>
+        </div>
+      </nav>
+    </div>
+
+    <div class="px-4 pt-3 pb-4" style="border-top:1px solid rgba(255,255,255,0.12);">
+      <div id="botao-sair" class="flex items-center gap-3 px-2 py-2 rounded-lg cursor-pointer transition-colors hover:bg-white/10" title="Sair">
+        <div class="avatar-iniciais" data-usuario-iniciais style="width:34px;height:34px;font-size:12.9px;background:#0891b2;">...</div>
+        <div class="min-w-0">
+          <p class="text-sm font-medium text-white truncate" data-usuario-nome>Carregando...</p>
+          <p class="text-xs truncate" data-usuario-email style="color:rgba(255,255,255,0.65);"></p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="area-principal" id="main-area">
+
+    <!-- ===================== TOPBAR ===================== -->
+    <header class="barra-superior">
+      <div class="h-16 flex items-center justify-between gap-4 px-4 lg:px-8">
+        <div class="flex items-center gap-3 min-w-0">
+          <button id="sidebar-toggle" class="botao-icone lg:hidden">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button class="botao-icone relative">
+            <i data-lucide="bell" class="w-[18px] h-[18px]"></i>
+            <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full" style="background:#dc2626;"></span>
+          </button>
+          <button class="botao-icone">
+            <i data-lucide="settings" class="w-[18px] h-[18px]"></i>
+          </button>
+          <div class="w-px h-6 bg-slate-200 mx-1 hidden sm:block"></div>
+          <button class="hidden sm:flex items-center gap-2 pl-1 pr-3 py-1 rounded-lg hover:bg-slate-100 transition-colors">
+            <div class="avatar-iniciais" data-usuario-iniciais style="width:30px;height:30px;font-size:11.4px;background:#ebbd25;">...</div>
+            <span class="text-sm font-medium text-slate-700" data-usuario-nome>Carregando...</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-4 lg:px-8 py-6 max-w-[1400px] w-full mx-auto">
+
+      <!-- ===================== Lista de clientes ===================== -->
+      <div class="cartao animar-entrada atraso-1 overflow-hidden mb-6">
+        <div class="flex items-center justify-between px-5 pt-5 pb-1">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-900">Clientes</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Lista completa de clientes cadastrados</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto mt-3">
+          <table class="tabela-dados">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Telefone</th>
+                <th>CPF</th>
+                <th>Pets</th>
+                <th>Plano</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <!--
+              As linhas abaixo ja existem prontas no HTML.
+              O clientes.js so preenche o conteudo de cada uma (nao cria linhas novas).
+            -->
+            <tbody id="clients-body">
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
+                    <span class="font-medium linha-cliente"></span>
+                  </div>
+                </td>
+                <td class="text-slate-600 linha-telefone"></td>
+                <td class="text-slate-600 linha-cpf"></td>
+                <td class="text-slate-600 linha-pets"></td>
+                <td class="text-slate-600 linha-plano"></td>
+                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
+                    <span class="font-medium linha-cliente"></span>
+                  </div>
+                </td>
+                <td class="text-slate-600 linha-telefone"></td>
+                <td class="text-slate-600 linha-cpf"></td>
+                <td class="text-slate-600 linha-pets"></td>
+                <td class="text-slate-600 linha-plano"></td>
+                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
+                    <span class="font-medium linha-cliente"></span>
+                  </div>
+                </td>
+                <td class="text-slate-600 linha-telefone"></td>
+                <td class="text-slate-600 linha-cpf"></td>
+                <td class="text-slate-600 linha-pets"></td>
+                <td class="text-slate-600 linha-plano"></td>
+                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
+                    <span class="font-medium linha-cliente"></span>
+                  </div>
+                </td>
+                <td class="text-slate-600 linha-telefone"></td>
+                <td class="text-slate-600 linha-cpf"></td>
+                <td class="text-slate-600 linha-pets"></td>
+                <td class="text-slate-600 linha-plano"></td>
+                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
+                    <span class="font-medium linha-cliente"></span>
+                  </div>
+                </td>
+                <td class="text-slate-600 linha-telefone"></td>
+                <td class="text-slate-600 linha-cpf"></td>
+                <td class="text-slate-600 linha-pets"></td>
+                <td class="text-slate-600 linha-plano"></td>
+                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
+                    <span class="font-medium linha-cliente"></span>
+                  </div>
+                </td>
+                <td class="text-slate-600 linha-telefone"></td>
+                <td class="text-slate-600 linha-cpf"></td>
+                <td class="text-slate-600 linha-pets"></td>
+                <td class="text-slate-600 linha-plano"></td>
+                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
+                    <span class="font-medium linha-cliente"></span>
+                  </div>
+                </td>
+                <td class="text-slate-600 linha-telefone"></td>
+                <td class="text-slate-600 linha-cpf"></td>
+                <td class="text-slate-600 linha-pets"></td>
+                <td class="text-slate-600 linha-plano"></td>
+                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
+                    <span class="font-medium linha-cliente"></span>
+                  </div>
+                </td>
+                <td class="text-slate-600 linha-telefone"></td>
+                <td class="text-slate-600 linha-cpf"></td>
+                <td class="text-slate-600 linha-pets"></td>
+                <td class="text-slate-600 linha-plano"></td>
+                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
+                    <span class="font-medium linha-cliente"></span>
+                  </div>
+                </td>
+                <td class="text-slate-600 linha-telefone"></td>
+                <td class="text-slate-600 linha-cpf"></td>
+                <td class="text-slate-600 linha-pets"></td>
+                <td class="text-slate-600 linha-plano"></td>
+                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
+                    <span class="font-medium linha-cliente"></span>
+                  </div>
+                </td>
+                <td class="text-slate-600 linha-telefone"></td>
+                <td class="text-slate-600 linha-cpf"></td>
+                <td class="text-slate-600 linha-pets"></td>
+                <td class="text-slate-600 linha-plano"></td>
+                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===================== Charts ===================== -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="cartao animar-entrada atraso-2 p-5 lg:col-span-2">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">Novos clientes por mes</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Ultimos 6 meses</p>
+            </div>
+          </div>
+          <div class="caixa-grafico" style="height:260px;">
+            <canvas id="newClientsChart"></canvas>
+          </div>
+        </div>
+
+        <div class="cartao animar-entrada atraso-3 p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">Planos por status</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Distribuicao atual</p>
+            </div>
+          </div>
+          <div class="caixa-grafico" style="height:260px;">
+            <canvas id="planStatusChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/components.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/clientes.js"></script>
+</body>
+</html>

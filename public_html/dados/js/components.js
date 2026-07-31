@@ -8,6 +8,8 @@
 /** Classe CSS do selo (badge) de acordo com o status do plano */
 const STATUS_BADGE_MAP = {
   'Ativo': 'selo-verde',
+  'Pendente': 'selo-amarelo',
+  'Vencido': 'selo-vermelho',
   'Cancelado': 'selo-vermelho',
 };
 
@@ -39,24 +41,4 @@ function getInitials(fullName) {
 function corAvatar(name) {
   const indice = name.charCodeAt(0) % CORES_AVATAR.length;
   return CORES_AVATAR[indice];
-}
-
-/** Escapa texto antes de inseri-lo em uma tabela criada por template. */
-function escapar(valor) {
-  const elemento = document.createElement('div');
-  elemento.textContent = String(valor ?? '');
-  return elemento.innerHTML;
-}
-
-async function enviarJson(url, dados) {
-  const resposta = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify(dados),
-  });
-  const resultado = await resposta.json();
-  if (resposta.status === 401) location.replace('login.html');
-  if (resposta.status === 403 && resultado.trocarSenha) location.replace('trocar-senha.html');
-  if (!resposta.ok) throw new Error(resultado.mensagem || 'Nao foi possivel concluir.');
-  return resultado;
 }

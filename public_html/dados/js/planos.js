@@ -1,79 +1,107 @@
-let dadosPlanos = { catalogo: [], assinaturas: [], cancelamentosImportados: [] };
-let listaPets = [];
-const modalTipo = document.getElementById('modal-tipo');
-const modalAssinatura = document.getElementById('modal-assinatura');
-const formTipo = document.getElementById('form-tipo');
-const formAssinatura = document.getElementById('form-assinatura');
+function preencherAssinaturas(assinaturas) {
+  const corpo = document.getElementById('recent-plans-body');
+  corpo.innerHTML = '';
 
-function renderCatalogo() {
-  document.getElementById('catalogo-body').innerHTML = dadosPlanos.catalogo.map(x => `<tr>
-    <td><strong>${escapar(x.nome)}</strong></td><td>${formatCurrency(x.valorPadrao)}</td><td>${x.quantidadeAtiva}</td><td>${x.quantidadeCancelada}</td><td>${formatCurrency(x.projecao)}</td>
-    <td><span class="selo ${x.ativo ? 'selo-verde' : 'selo-cinza'}">${x.ativo ? 'Disponivel' : 'Inativo'}</span></td><td><button class="acao" data-editar-tipo="${x.id}">Editar / renomear</button></td></tr>`).join('');
-}
-function renderAssinaturas() {
-  const termo = document.getElementById('busca-assinaturas').value.toLocaleLowerCase('pt-BR');
-  const status = document.getElementById('filtro-status').value;
-  const lista = dadosPlanos.assinaturas.filter(x => (!status || x.status === status) && [x.cliente, x.pet, x.plano].join(' ').toLocaleLowerCase('pt-BR').includes(termo));
-  document.getElementById('total-assinaturas').textContent = `${lista.length} registro(s)`;
-  document.getElementById('assinaturas-body').innerHTML = lista.map(x => `<tr>
-    <td><strong>${escapar(x.cliente)}</strong><div class="text-xs text-slate-500">${escapar(x.pet)}</div></td><td>${escapar(x.plano)}${x.adicional ? `<div class="text-xs text-slate-500">${escapar(x.adicional)}</div>` : ''}</td>
-    <td>${formatCurrency(x.valorMensal)}</td><td>${x.dataInicio ? formatDate(x.dataInicio) : '-'}<div class="text-xs text-slate-500">Reajuste: ${x.dataReajuste ? formatDate(x.dataReajuste) : '-'}</div></td>
-    <td><span class="selo ${x.status === 'Ativo' ? 'selo-verde' : 'selo-vermelho'}">${x.status}</span>${x.motivoCancelamento ? `<div class="text-xs text-slate-500">${escapar(x.motivoCancelamento)}</div>` : ''}</td>
-    <td class="whitespace-nowrap"><button class="acao" data-editar-assinatura="${x.id}">Editar / mudar plano</button><button class="acao ${x.status === 'Ativo' ? 'perigo' : ''}" data-status="${x.id}" data-novo-status="${x.status === 'Ativo' ? 'Cancelado' : 'Ativo'}">${x.status === 'Ativo' ? 'Cancelar' : 'Reativar'}</button></td></tr>`).join('');
-}
-function renderCancelamentos() {
-  document.getElementById('cancelamentos-body').innerHTML = dadosPlanos.cancelamentosImportados.map(x => `<tr><td>${formatDate(x.competencia)}</td><td>${escapar(x.cliente)}</td><td>${escapar(x.plano)}</td><td>${escapar(x.motivo)}</td><td>${formatCurrency(x.valor)}</td></tr>`).join('');
-}
-function opcoesAssinatura() {
-  formAssinatura.elements.petId.innerHTML = '<option value="">Selecione</option>' + listaPets.map(x => `<option value="${x.id}">${escapar(x.tutor)} — ${escapar(x.nome)}</option>`).join('');
-  formAssinatura.elements.planoId.innerHTML = '<option value="">Selecione</option>' + dadosPlanos.catalogo.filter(x => x.ativo).map(x => `<option value="${x.id}" data-valor="${x.valorPadrao}">${escapar(x.nome)}</option>`).join('');
-}
-function abrirTipo(plano = {}) {
-  formTipo.reset(); formTipo.elements.id.value = plano.id || ''; formTipo.elements.nome.value = plano.nome || '';
-  formTipo.elements.valorPadrao.value = plano.valorPadrao ?? 0; formTipo.elements.ativo.checked = plano.id ? plano.ativo : true;
-  document.getElementById('erro-tipo').textContent = ''; modalTipo.showModal();
-}
-function abrirAssinatura(item = {}) {
-  formAssinatura.reset(); opcoesAssinatura();
-  ['id', 'petId', 'planoId', 'valorMensal', 'dataInicio', 'dataReajuste', 'adicional', 'observacoes'].forEach(campo => { formAssinatura.elements[campo].value = item[campo] ?? ''; });
-  document.getElementById('erro-assinatura').textContent = ''; modalAssinatura.showModal();
-}
-async function carregarPlanos() {
-  const [resPlanos, resPets] = await Promise.all([fetch('api/planos.php', { cache: 'no-store' }), fetch('api/pets.php', { cache: 'no-store' })]);
-  const [planos, pets] = await Promise.all([resPlanos.json(), resPets.json()]);
-  if (!resPlanos.ok) throw new Error(planos.mensagem);
-  dadosPlanos = planos; listaPets = pets.pets || []; renderCatalogo(); renderAssinaturas(); renderCancelamentos();
-}
-document.querySelectorAll('[data-aba]').forEach(botao => botao.addEventListener('click', () => {
-  document.querySelectorAll('[data-aba]').forEach(x => x.classList.toggle('ativa', x === botao));
-  ['catalogo', 'assinaturas', 'cancelamentos'].forEach(nome => document.getElementById(`secao-${nome}`).classList.toggle('hidden', nome !== botao.dataset.aba));
-}));
-document.getElementById('novo-tipo').addEventListener('click', () => abrirTipo());
-document.getElementById('nova-assinatura').addEventListener('click', () => abrirAssinatura());
-document.getElementById('busca-assinaturas').addEventListener('input', renderAssinaturas);
-document.getElementById('filtro-status').addEventListener('change', renderAssinaturas);
-document.querySelectorAll('[data-fechar]').forEach(x => x.addEventListener('click', () => x.closest('dialog').close()));
-document.getElementById('catalogo-body').addEventListener('click', evento => {
-  const botao = evento.target.closest('[data-editar-tipo]'); if (botao) abrirTipo(dadosPlanos.catalogo.find(x => x.id === Number(botao.dataset.editarTipo)));
-});
-document.getElementById('assinaturas-body').addEventListener('click', async evento => {
-  const editar = evento.target.closest('[data-editar-assinatura]'); const status = evento.target.closest('[data-status]');
-  if (editar) abrirAssinatura(dadosPlanos.assinaturas.find(x => x.id === Number(editar.dataset.editarAssinatura)));
-  if (status) {
-    const novoStatus = status.dataset.novoStatus; let motivo = '';
-    if (novoStatus === 'Cancelado') { motivo = prompt('Motivo do cancelamento:') || ''; if (!motivo) return; }
-    await enviarJson('api/cancelar-plano.php', { id: Number(status.dataset.status), status: novoStatus, motivo }); await carregarPlanos();
+  if (assinaturas.length === 0) {
+    const linha = document.createElement('tr');
+    const celula = document.createElement('td');
+    celula.colSpan = 6;
+    celula.className = 'text-center text-slate-500 py-8';
+    celula.textContent = 'Nenhuma assinatura cadastrada.';
+    linha.appendChild(celula);
+    corpo.appendChild(linha);
+    return;
   }
-});
-formAssinatura.elements.planoId.addEventListener('change', () => {
-  if (!formAssinatura.elements.id.value) formAssinatura.elements.valorMensal.value = formAssinatura.elements.planoId.selectedOptions[0]?.dataset.valor || 0;
-});
-formTipo.addEventListener('submit', async evento => {
-  evento.preventDefault(); const dados = Object.fromEntries(new FormData(formTipo)); dados.id = Number(dados.id || 0); dados.ativo = formTipo.elements.ativo.checked;
-  try { await enviarJson('api/salvar-plano.php', dados); modalTipo.close(); await carregarPlanos(); } catch (erro) { document.getElementById('erro-tipo').textContent = erro.message; }
-});
-formAssinatura.addEventListener('submit', async evento => {
-  evento.preventDefault(); const dados = Object.fromEntries(new FormData(formAssinatura)); dados.id = Number(dados.id || 0); dados.petId = Number(dados.petId); dados.planoId = Number(dados.planoId);
-  try { await enviarJson('api/salvar-assinatura.php', dados); modalAssinatura.close(); await carregarPlanos(); } catch (erro) { document.getElementById('erro-assinatura').textContent = erro.message; }
-});
-document.addEventListener('DOMContentLoaded', () => carregarPlanos().catch(erro => { document.getElementById('catalogo-body').innerHTML = `<tr><td colspan="7">${escapar(erro.message)}</td></tr>`; }));
+
+  assinaturas.forEach((assinatura) => {
+    const linha = document.createElement('tr');
+    const clienteCelula = document.createElement('td');
+    const grupo = document.createElement('div');
+    grupo.className = 'flex items-center gap-3';
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar-iniciais';
+    avatar.style.cssText = `width:32px;height:32px;font-size:12.16px;background:${corAvatar(assinatura.cliente)};`;
+    avatar.textContent = getInitials(assinatura.cliente);
+    const nome = document.createElement('span');
+    nome.className = 'font-medium';
+    nome.textContent = assinatura.cliente;
+    grupo.append(avatar, nome);
+    clienteCelula.appendChild(grupo);
+    linha.appendChild(clienteCelula);
+
+    [
+      assinatura.pet,
+      assinatura.plano,
+      formatCurrency(Number(assinatura.valor)),
+      assinatura.dataVencimento ? formatDate(assinatura.dataVencimento) : '-',
+    ].forEach((texto) => {
+      const celula = document.createElement('td');
+      celula.className = 'text-slate-600';
+      celula.textContent = texto;
+      linha.appendChild(celula);
+    });
+
+    const statusCelula = document.createElement('td');
+    const status = document.createElement('span');
+    status.className = `selo ${STATUS_BADGE_MAP[assinatura.status] || 'selo-cinza'}`;
+    const ponto = document.createElement('span');
+    ponto.className = 'selo-ponto';
+    status.append(ponto, document.createTextNode(assinatura.status));
+    statusCelula.appendChild(status);
+    linha.appendChild(statusCelula);
+    corpo.appendChild(linha);
+  });
+}
+
+function renderPlansPeriodChart(serie) {
+  new Chart(document.getElementById('plansPeriodChart'), {
+    type: 'bar',
+    data: {
+      labels: serie.labels,
+      datasets: [{
+        data: serie.valores,
+        backgroundColor: '#2f5fa8',
+        borderRadius: 4,
+        maxBarThickness: 44,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (item) => `${item.parsed.y} planos contratados` } },
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0, color: '#94a3b8' }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+      },
+    },
+  });
+}
+
+async function carregarPlanos() {
+  try {
+    const resposta = await fetch('api/planos.php', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+    const resultado = await resposta.json();
+    if (resposta.status === 401) {
+      sessionStorage.removeItem('tpp-auth');
+      window.location.replace('login.html');
+      return;
+    }
+    if (resposta.status === 403 && resultado.trocarSenha) {
+      sessionStorage.removeItem('tpp-auth');
+      window.location.replace('trocar-senha.html');
+      return;
+    }
+    if (!resposta.ok) throw new Error(resultado.mensagem);
+    preencherAssinaturas(resultado.assinaturas);
+    renderPlansPeriodChart(resultado.serie);
+  } catch (erro) {
+    const corpo = document.getElementById('recent-plans-body');
+    corpo.innerHTML = '<tr><td colspan="6" class="text-center text-red-700 py-8"></td></tr>';
+    corpo.querySelector('td').textContent = erro.message || 'Não foi possível carregar os planos.';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', carregarPlanos);

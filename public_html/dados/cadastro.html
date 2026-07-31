@@ -1,1 +1,319 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Cadastro</title><meta http-equiv="refresh" content="0;url=clientes.html"><script>location.replace('clientes.html')</script></head><body><a href="clientes.html">Abrir clientes</a></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<script>
+  if (sessionStorage.getItem('tpp-auth') !== '1') {
+    window.location.replace('login.html');
+  }
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro · TudoPraPet</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Poppins', 'sans-serif'] },
+        colors: {
+          brand: { 50: '#eaf1fb', 500: '#2f5fa8', 600: '#245095', 700: '#1c3f78' },
+          accent: { 400: '#f4d571', 500: '#f1c744', 600: '#d9ad2a' },
+        },
+      },
+    },
+  };
+</script>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="font-sans">
+
+<div class="estrutura-app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="barra-lateral">
+    <div class="px-4 pt-6 pb-3">
+      <span class="font-extrabold text-2xl tracking-tight">
+        <span style="color:var(--color-accent);">Tudo</span><span class="text-white">Pra</span><span style="color:var(--color-accent);">Pet</span>
+      </span>
+    </div>
+
+    <div class="px-3 pb-3">
+      <div class="relative">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--color-primary);"></i>
+        <input type="text"
+          class="w-full pl-9 pr-3 py-2 text-sm rounded-full outline-none transition-shadow focus:ring-2"
+          style="background:#ffffff; color:var(--color-text-primary); border:1px solid rgba(255,255,255,0.16); --tw-ring-color:rgba(241,199,68,0.6);">
+      </div>
+    </div>
+
+    <div class="painel-menu">
+      <nav class="flex-1 px-4 pt-4 pb-2 overflow-y-auto">
+        <p class="text-[11px] font-semibold uppercase tracking-wider mb-1 text-slate-400">Menu</p>
+        <div>
+          <a href="index.html" class="link-menu">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="clientes.html" class="link-menu">
+            <i data-lucide="users"></i>
+            <span>Clientes</span>
+          </a>
+          <a href="pets.html" class="link-menu">
+            <i data-lucide="paw-print"></i>
+            <span>Pets</span>
+          </a>
+          <a href="planos.html" class="link-menu">
+            <i data-lucide="clipboard-list"></i>
+            <span>Planos</span>
+          </a>
+          <a href="cadastro.html" class="link-menu ativo">
+            <i data-lucide="user-plus"></i>
+            <span>Cadastro</span>
+          </a>
+        </div>
+      </nav>
+    </div>
+
+    <div class="px-4 pt-3 pb-4" style="border-top:1px solid rgba(255,255,255,0.12);">
+      <div id="botao-sair" class="flex items-center gap-3 px-2 py-2 rounded-lg cursor-pointer transition-colors hover:bg-white/10" title="Sair">
+        <div class="avatar-iniciais" data-usuario-iniciais style="width:34px;height:34px;font-size:12.9px;background:#0891b2;">...</div>
+        <div class="min-w-0">
+          <p class="text-sm font-medium text-white truncate" data-usuario-nome>Carregando...</p>
+          <p class="text-xs truncate" data-usuario-email style="color:rgba(255,255,255,0.65);"></p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="area-principal" id="main-area">
+
+    <!-- ===================== TOPBAR ===================== -->
+    <header class="barra-superior">
+      <div class="h-16 flex items-center justify-between gap-4 px-4 lg:px-8">
+        <div class="flex items-center gap-3 min-w-0">
+          <button id="sidebar-toggle" class="botao-icone lg:hidden">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button class="botao-icone relative">
+            <i data-lucide="bell" class="w-[18px] h-[18px]"></i>
+            <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full" style="background:#dc2626;"></span>
+          </button>
+          <button class="botao-icone">
+            <i data-lucide="settings" class="w-[18px] h-[18px]"></i>
+          </button>
+          <div class="w-px h-6 bg-slate-200 mx-1 hidden sm:block"></div>
+          <button class="hidden sm:flex items-center gap-2 pl-1 pr-3 py-1 rounded-lg hover:bg-slate-100 transition-colors">
+            <div class="avatar-iniciais" data-usuario-iniciais style="width:30px;height:30px;font-size:11.4px;background:#ebbd25;">...</div>
+            <span class="text-sm font-medium text-slate-700" data-usuario-nome>Carregando...</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-4 lg:px-8 py-6 max-w-[1400px] w-full mx-auto">
+
+      <form id="form-cadastro" class="max-w-3xl mx-auto" novalidate>
+
+        <!-- ===================== Dados do cliente (tutor) ===================== -->
+        <div class="cartao animar-entrada atraso-1 p-6">
+          <div class="flex items-center justify-between mb-1">
+            <div>
+              <h2 class="text-base font-semibold text-slate-900">Dados do cliente (tutor)</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Informacoes de quem e responsavel pelos pets</p>
+            </div>
+          </div>
+
+          <div class="mt-5">
+            <div class="campo-form">
+              <label for="campo-nome">Nome completo</label>
+              <input type="text" id="campo-nome" name="nome" placeholder="Ex: Ana Beatriz Ferreira" required>
+              <span class="campo-erro"></span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+              <div class="campo-form">
+                <label for="campo-cpf">CPF</label>
+                <input type="text" id="campo-cpf" name="cpf" placeholder="000.000.000-00" inputmode="numeric" maxlength="14" required>
+                <span class="campo-erro"></span>
+              </div>
+
+              <div class="campo-form">
+                <label for="campo-telefone">Telefone</label>
+                <input type="text" id="campo-telefone" name="telefone" placeholder="(00) 00000-0000" inputmode="numeric" maxlength="15" required>
+                <span class="campo-erro"></span>
+              </div>
+            </div>
+
+            <div class="campo-form">
+              <label for="campo-email">E-mail</label>
+              <input type="email" id="campo-email" name="email" placeholder="Ex: ana.beatriz@email.com" required>
+              <span class="campo-erro"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== Pets do cliente ===================== -->
+        <div class="cartao animar-entrada atraso-2 p-6 mt-5">
+          <div class="flex items-center justify-between mb-1">
+            <div>
+              <h2 class="text-base font-semibold text-slate-900">Pets</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Cadastre um ou mais pets e o plano de cada um</p>
+            </div>
+          </div>
+
+          <div id="pets-container" class="mt-5"></div>
+
+          <button type="button" id="botao-adicionar-pet" class="botao-secundario mt-1">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Adicionar outro pet
+          </button>
+        </div>
+
+        <div id="cadastro-sucesso" class="cadastro-sucesso mt-5" hidden>
+          <i data-lucide="circle-check" class="w-4 h-4"></i>
+          <span>Cliente e pet(s) cadastrados com sucesso!</span>
+        </div>
+
+        <div id="cadastro-erro" class="cadastro-erro mt-5" hidden role="alert">
+          <i data-lucide="circle-alert" class="w-4 h-4"></i>
+          <span>Nao foi possivel concluir o cadastro.</span>
+        </div>
+
+        <div class="flex justify-end mt-6">
+          <button type="submit" class="botao-primario">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            Cadastrar
+          </button>
+        </div>
+      </form>
+
+      <!-- ===================== Modelo (template) de um pet ===================== -->
+      <template id="template-pet-item">
+        <div class="pet-item" data-pet-item>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-900" data-pet-titulo>Pet 1</h3>
+            <button type="button" class="botao-remover-pet" data-acao-remover-pet title="Remover este pet">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+              Remover
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+            <div class="campo-form">
+              <label data-label-for="nome">Nome do pet</label>
+              <input type="text" data-field="nome" placeholder="Ex: Thor">
+              <span class="campo-erro"></span>
+            </div>
+
+            <div class="campo-form">
+              <label data-label-for="especie">Especie</label>
+              <select data-field="especie">
+                <option value="" disabled selected>Selecione a especie</option>
+                <option value="Cachorro">Cachorro</option>
+                <option value="Gato">Gato</option>
+                <option value="Ave">Ave</option>
+                <option value="Roedor">Roedor</option>
+                <option value="Outro">Outro</option>
+              </select>
+              <span class="campo-erro"></span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+            <div class="campo-form">
+              <label data-label-for="raca">Raca</label>
+              <input type="text" data-field="raca" placeholder="Ex: Golden Retriever">
+              <span class="campo-erro"></span>
+            </div>
+
+            <div class="campo-form">
+              <label data-label-for="sexo">Sexo</label>
+              <select data-field="sexo">
+                <option value="" disabled selected>Selecione o sexo</option>
+                <option value="Macho">Macho</option>
+                <option value="Femea">Femea</option>
+              </select>
+              <span class="campo-erro"></span>
+            </div>
+          </div>
+
+          <div class="campo-form">
+            <label>Idade ou data de nascimento</label>
+            <div class="segmentado">
+              <label>
+                <input type="radio" data-field="idade-tipo" value="idade" checked>
+                <span>Idade</span>
+              </label>
+              <label>
+                <input type="radio" data-field="idade-tipo" value="nascimento">
+                <span>Data de nascimento</span>
+              </label>
+            </div>
+
+            <div class="mt-2" data-grupo="idade">
+              <input type="number" data-field="idade" placeholder="Ex: 3" min="0" max="40">
+            </div>
+            <div class="mt-2 hidden" data-grupo="nascimento">
+              <input type="date" data-field="nascimento">
+            </div>
+            <span class="campo-erro"></span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+            <div class="campo-form">
+              <label data-label-for="peso">Peso em kg (opcional)</label>
+              <input type="number" data-field="peso" placeholder="Ex: 8.5" min="0" step="0.1">
+              <span class="campo-erro"></span>
+            </div>
+          </div>
+
+          <div class="divisor-secao">Plano do pet</div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-4">
+            <div class="campo-form">
+              <label data-label-for="plano">Plano</label>
+              <select data-field="plano">
+                <option value="" disabled selected>Selecione um plano</option>
+                <option value="Bronze">Bronze</option>
+                <option value="Prata">Prata</option>
+                <option value="Ouro">Ouro</option>
+              </select>
+              <span class="campo-erro"></span>
+            </div>
+
+            <div class="campo-form">
+              <label data-label-for="data-inicio">Data de inicio</label>
+              <input type="date" data-field="data-inicio">
+              <span class="campo-erro"></span>
+            </div>
+
+            <div class="campo-form">
+              <label data-label-for="data-vencimento">Data de vencimento</label>
+              <input type="date" data-field="data-vencimento">
+              <span class="campo-erro"></span>
+            </div>
+          </div>
+        </div>
+      </template>
+
+    </main>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/components.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/cadastro.js"></script>
+</body>
+</html>
