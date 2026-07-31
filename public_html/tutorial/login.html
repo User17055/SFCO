@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar · TudoPraPet</title>
+
+<script>
+  if (sessionStorage.getItem('tpp-auth') === '1') {
+    window.location.replace('index.html');
+  }
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Poppins', 'sans-serif'] },
+        colors: {
+          brand: { 50: '#eaf1fb', 500: '#2f5fa8', 600: '#245095', 700: '#1c3f78' },
+          accent: { 400: '#f4d571', 500: '#f1c744', 600: '#d9ad2a' },
+          laranja: { 500: '#f2994a', 600: '#d97e2e' },
+        },
+      },
+    },
+  };
+</script>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="font-sans tela-login">
+
+<div class="min-h-screen flex items-center justify-center px-4 py-10 relative overflow-hidden" style="background:var(--color-primary);">
+
+  <!-- Fundo decorativo: patinhas e formas organicas -->
+  <div class="tela-login-fundo">
+    <div class="tela-login-blob tela-login-blob--1"></div>
+    <div class="tela-login-blob tela-login-blob--2"></div>
+    <div class="tela-login-blob tela-login-blob--3"></div>
+
+    <i data-lucide="paw-print" class="tela-login-pata" style="width:34px;height:34px;top:12%;left:10%;transform:rotate(-18deg);"></i>
+    <i data-lucide="paw-print" class="tela-login-pata" style="width:22px;height:22px;top:22%;left:20%;transform:rotate(10deg);"></i>
+    <i data-lucide="paw-print" class="tela-login-pata" style="width:48px;height:48px;top:70%;left:6%;transform:rotate(24deg);"></i>
+    <i data-lucide="paw-print" class="tela-login-pata" style="width:28px;height:28px;top:8%;right:14%;transform:rotate(16deg);"></i>
+    <i data-lucide="paw-print" class="tela-login-pata" style="width:40px;height:40px;top:78%;right:10%;transform:rotate(-14deg);"></i>
+    <i data-lucide="paw-print" class="tela-login-pata" style="width:20px;height:20px;top:88%;right:26%;transform:rotate(8deg);"></i>
+    <i data-lucide="paw-print" class="tela-login-pata" style="width:26px;height:26px;top:40%;right:6%;transform:rotate(-6deg);"></i>
+  </div>
+
+  <div class="w-full max-w-[460px] relative" style="z-index:1;">
+
+    <div class="text-center mb-7">
+      <span class="font-extrabold text-3xl tracking-tight">
+        <span style="color:var(--color-accent);">Tudo</span><span class="text-white">Pra</span><span style="color:var(--color-accent);">Pet</span>
+      </span>
+      <p class="text-sm mt-2" style="color:rgba(255,255,255,0.8);">Acesse o painel para gerenciar clientes, pets e planos</p>
+    </div>
+
+    <div class="cartao-login animar-entrada p-8 sm:p-10">
+      <h1 class="text-xl font-semibold text-slate-900 text-center">Entrar</h1>
+      <p class="text-xs text-slate-500 text-center mt-1 mb-7">Informe suas credenciais para acessar o painel</p>
+
+      <form id="form-login" novalidate>
+        <div class="campo-form">
+          <label for="campo-login-email">E-mail</label>
+          <div class="campo-input-wrapper relative">
+            <input type="email" id="campo-login-email" name="email" placeholder="seu@email.com" autocomplete="username" required>
+            <i data-lucide="mail" class="campo-icone w-[18px] h-[18px]"></i>
+          </div>
+          <span class="campo-erro"></span>
+        </div>
+
+        <div class="campo-form">
+          <label for="campo-login-senha">Senha</label>
+          <div class="campo-input-wrapper relative">
+            <input type="password" id="campo-login-senha" name="senha" placeholder="Digite sua senha" autocomplete="current-password" class="pr-10" required>
+            <i data-lucide="lock" class="campo-icone w-[18px] h-[18px]"></i>
+            <button type="button" id="botao-mostrar-senha" class="botao-icone absolute right-1 top-1/2 -translate-y-1/2" style="width:32px;height:32px;" title="Mostrar senha" tabindex="-1">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <span class="campo-erro"></span>
+        </div>
+
+        <div class="linha-opcoes-login">
+          <label class="lembrar-login">
+            <input type="checkbox" id="campo-lembrar">
+            Lembrar de mim
+          </label>
+          <a href="#" class="link-esqueci">Esqueci minha senha</a>
+        </div>
+
+        <button type="submit" class="botao-entrar">
+          <i data-lucide="log-in" class="w-4 h-4"></i>
+          Entrar
+        </button>
+      </form>
+
+      <p class="text-sm text-slate-500 text-center mt-6">
+        Não possui conta? <a href="cadastro.html" class="link-cadastro">Cadastre-se</a>
+      </p>
+
+      <p class="text-xs text-slate-400 text-center mt-5">
+        Use qualquer e-mail e senha para entrar — este é um ambiente de demonstração.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="js/login.js"></script>
+</body>
+</html>

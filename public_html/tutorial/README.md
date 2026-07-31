@@ -1,8 +1,24 @@
 # Tutorial: transformar o cadastro fictício em PHP
 
-Este guia foi escrito a partir da análise da pasta `public_html/dados`. Ele ensina
-como fazer o formulário de `cadastro.html` gravar clientes, pets e planos em um
-banco MySQL usando PHP, sem alterar o projeto original.
+Este guia foi escrito a partir da análise da pasta `public_html/dados`. A versão
+funcional foi criada em `public_html/tutorial`: o formulário de `cadastro.html`
+grava clientes, pets e planos em um banco MySQL usando PHP, sem alterar o
+projeto original.
+
+## Antes de executar
+
+A implementação já está pronta. Para ligá-la ao banco:
+
+1. Ative Apache e MySQL no XAMPP.
+2. Importe `sql/estrutura.sql` pelo phpMyAdmin.
+3. Confira os dados de conexão em `config/banco.php`.
+4. Verifique se a extensão PHP `pdo_mysql` está habilitada.
+5. Abra `http://localhost/SFCO/public_html/tutorial/login.html`.
+
+Os valores padrão da conexão são banco `tudoprapet`, usuário `root`, senha
+vazia, host `localhost` e porta `3306`. Na hospedagem, você pode definir
+`TPP_DB_HOST`, `TPP_DB_PORT`, `TPP_DB_NAME`, `TPP_DB_USER` e
+`TPP_DB_PASSWORD`, sem gravar a senha diretamente no projeto.
 
 ## 1. Como o cadastro funciona atualmente
 
