@@ -1,95 +1,46 @@
-const EMOJI_ESPECIE = {
-  Cachorro: '🐕',
-  Gato: '🐈',
-  Ave: '🐦',
-  Roedor: '🐹',
-  Outro: '🐾',
-};
+let pets = [];
+let tutores = [];
+const modalPet = document.getElementById('modal-pet');
+const formPet = document.getElementById('form-pet');
 
-function idadePet(pet) {
-  if (pet.idade !== null) return pet.idade === 1 ? '1 ano' : `${pet.idade} anos`;
-  if (!pet.nascimento) return '-';
-
-  const [ano, mes, dia] = pet.nascimento.split('-').map(Number);
-  const hoje = new Date();
-  let idade = hoje.getFullYear() - ano;
-  if (hoje.getMonth() + 1 < mes || (hoje.getMonth() + 1 === mes && hoje.getDate() < dia)) idade--;
-  return idade === 1 ? '1 ano' : `${Math.max(idade, 0)} anos`;
+function dadosPet(pet) {
+  return [pet.especie, pet.raca, pet.sexo, pet.idade !== null ? `${pet.idade} ano(s)` : '', pet.peso !== null ? `${pet.peso} kg` : ''].filter(Boolean).map(escapar).join(' · ') || '-';
 }
-
-function td(texto, classe = 'text-slate-600') {
-  const elemento = document.createElement('td');
-  elemento.className = classe;
-  elemento.textContent = texto;
-  return elemento;
+function renderPets() {
+  const termo = document.getElementById('busca-pets').value.toLocaleLowerCase('pt-BR');
+  const lista = pets.filter(x => [x.nome, x.tutor, x.planos, x.especie, x.raca].join(' ').toLocaleLowerCase('pt-BR').includes(termo));
+  document.getElementById('total-pets').textContent = `${lista.length} pet(s)`;
+  document.getElementById('pets-body').innerHTML = lista.length ? lista.map(x => `<tr>
+    <td><strong>${escapar(x.nome)}</strong></td><td>${escapar(x.tutor)}</td><td>${dadosPet(x)}</td>
+    <td>${x.planosAtivos}<div class="text-xs text-slate-500">${escapar(x.planos)}</div></td><td>${formatCurrency(x.projecao)}</td>
+    <td class="whitespace-nowrap"><button class="acao" data-editar="${x.id}">Editar</button><button class="acao perigo" data-excluir="${x.id}">Excluir</button></td></tr>`).join('') : '<tr><td colspan="6">Nenhum pet encontrado.</td></tr>';
 }
-
-function preencherPets(pets) {
-  const corpo = document.getElementById('pets-body');
-  corpo.innerHTML = '';
-
-  if (pets.length === 0) {
-    const linha = document.createElement('tr');
-    const vazio = td('Nenhum pet cadastrado.', 'text-center text-slate-500 py-8');
-    vazio.colSpan = 6;
-    linha.appendChild(vazio);
-    corpo.appendChild(linha);
-    return;
-  }
-
-  pets.forEach((pet) => {
-    const linha = document.createElement('tr');
-    const petCelula = document.createElement('td');
-    const grupo = document.createElement('div');
-    grupo.className = 'flex items-center gap-3';
-    const avatar = document.createElement('div');
-    avatar.className = 'avatar-iniciais';
-    avatar.style.cssText = 'width:32px;height:32px;font-size:16px;background:#f1f5f9;';
-    avatar.textContent = EMOJI_ESPECIE[pet.especie] || '🐾';
-    const nome = document.createElement('span');
-    nome.className = 'font-medium';
-    nome.textContent = pet.nome;
-    grupo.append(avatar, nome);
-    petCelula.appendChild(grupo);
-    linha.appendChild(petCelula);
-    linha.appendChild(td(idadePet(pet)));
-    linha.appendChild(td(pet.raca || '-'));
-    linha.appendChild(td(pet.tutor));
-    linha.appendChild(td(pet.plano));
-
-    const statusCelula = document.createElement('td');
-    const status = document.createElement('span');
-    status.className = `selo ${STATUS_BADGE_MAP[pet.status] || 'selo-cinza'}`;
-    const ponto = document.createElement('span');
-    ponto.className = 'selo-ponto';
-    status.append(ponto, document.createTextNode(pet.status));
-    statusCelula.appendChild(status);
-    linha.appendChild(statusCelula);
-    corpo.appendChild(linha);
-  });
+function preencherTutores() {
+  formPet.elements.clienteId.innerHTML = '<option value="">Selecione</option>' + tutores.map(x => `<option value="${x.id}">${escapar(x.nome)}</option>`).join('');
 }
-
+function abrirPet(pet = {}) {
+  formPet.reset(); preencherTutores();
+  ['id', 'clienteId', 'nome', 'especie', 'raca', 'sexo', 'idade', 'nascimento', 'peso', 'observacoes'].forEach(campo => { formPet.elements[campo].value = pet[campo] ?? ''; });
+  document.getElementById('erro-pet').textContent = ''; modalPet.showModal();
+}
 async function carregarPets() {
-  try {
-    const resposta = await fetch('api/pets.php', { headers: { Accept: 'application/json' }, cache: 'no-store' });
-    const resultado = await resposta.json();
-    if (resposta.status === 401) {
-      sessionStorage.removeItem('tpp-auth');
-      window.location.replace('login.html');
-      return;
-    }
-    if (resposta.status === 403 && resultado.trocarSenha) {
-      sessionStorage.removeItem('tpp-auth');
-      window.location.replace('trocar-senha.html');
-      return;
-    }
-    if (!resposta.ok) throw new Error(resultado.mensagem);
-    preencherPets(resultado.pets);
-  } catch (erro) {
-    const corpo = document.getElementById('pets-body');
-    corpo.innerHTML = '<tr><td colspan="6" class="text-center text-red-700 py-8"></td></tr>';
-    corpo.querySelector('td').textContent = erro.message || 'Não foi possível carregar os pets.';
-  }
+  const [resPets, resClientes] = await Promise.all([fetch('api/pets.php', { cache: 'no-store' }), fetch('api/clientes.php', { cache: 'no-store' })]);
+  const [dadosPets, dadosClientes] = await Promise.all([resPets.json(), resClientes.json()]);
+  if (!resPets.ok) throw new Error(dadosPets.mensagem);
+  pets = dadosPets.pets; tutores = dadosClientes.clientes || []; renderPets();
 }
-
-document.addEventListener('DOMContentLoaded', carregarPets);
+document.getElementById('novo-pet').addEventListener('click', () => abrirPet());
+document.getElementById('busca-pets').addEventListener('input', renderPets);
+document.querySelectorAll('[data-fechar]').forEach(x => x.addEventListener('click', () => modalPet.close()));
+document.getElementById('pets-body').addEventListener('click', async evento => {
+  const editar = evento.target.closest('[data-editar]'); const excluir = evento.target.closest('[data-excluir]');
+  if (editar) abrirPet(pets.find(x => x.id === Number(editar.dataset.editar)));
+  if (excluir && confirm('Excluir este pet e seus planos?')) { await enviarJson('api/excluir-pet.php', { id: Number(excluir.dataset.excluir) }); await carregarPets(); }
+});
+formPet.addEventListener('submit', async evento => {
+  evento.preventDefault(); const dados = Object.fromEntries(new FormData(formPet));
+  dados.id = Number(dados.id || 0); dados.clienteId = Number(dados.clienteId);
+  try { await enviarJson('api/salvar-pet.php', dados); modalPet.close(); await carregarPets(); }
+  catch (erro) { document.getElementById('erro-pet').textContent = erro.message; }
+});
+document.addEventListener('DOMContentLoaded', () => carregarPets().catch(erro => { document.getElementById('pets-body').innerHTML = `<tr><td colspan="6">${escapar(erro.message)}</td></tr>`; }));
