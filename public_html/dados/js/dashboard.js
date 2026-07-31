@@ -62,8 +62,8 @@ function renderQuantityChart(historico) {
       labels: mesesRecentes.map((item) => rotuloCompetencia(item.competencia)),
       datasets: [
         {
-          label: 'Planos novos',
-          data: mesesRecentes.map((item) => item.novos),
+          label: 'Quantidade geral de planos',
+          data: mesesRecentes.map((item) => item.quantidade),
           backgroundColor: '#f1c744',
           borderRadius: 6,
           maxBarThickness: 34,

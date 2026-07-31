@@ -127,17 +127,23 @@ try {
         $chave = $normalizarNomePlano($plano['nome']);
         $relatorios[$chave] = [
             'nome' => $plano['nome'],
+            'valorPlano' => $plano['valorPadrao'],
             'quantidadeAtual' => $plano['quantidadeAtiva'],
             'projecaoAtual' => $plano['projecao'],
             'quantidades' => array_fill_keys($todasCompetencias, 0),
+            'valoresMensais' => array_fill_keys($todasCompetencias, 0.0),
+            'novos' => array_fill_keys($todasCompetencias, 0),
             'cancelados' => array_fill_keys($todasCompetencias, 0),
+            'valoresCancelados' => array_fill_keys($todasCompetencias, 0.0),
         ];
         $relatorios[$chave]['quantidades'][$movimentos['competenciaAtual']] = $plano['quantidadeAtiva'];
+        $relatorios[$chave]['valoresMensais'][$movimentos['competenciaAtual']] = $plano['projecao'];
     }
 
     $historicoPorPlano = $pdo->query(
         "SELECT DATE_FORMAT(competencia, '%Y-%m') AS competencia,
-                plano_nome, COUNT(*) AS quantidade
+                plano_nome, COUNT(*) AS quantidade,
+                ROUND(SUM(valor_mensal), 2) AS valor_mensal
            FROM historico_planos
           GROUP BY competencia, plano_nome
           ORDER BY competencia, plano_nome"
@@ -147,18 +153,51 @@ try {
         if (!isset($relatorios[$chave])) {
             $relatorios[$chave] = [
                 'nome' => $linha['plano_nome'],
+                'valorPlano' => 0.0,
                 'quantidadeAtual' => 0,
                 'projecaoAtual' => 0.0,
                 'quantidades' => array_fill_keys($todasCompetencias, 0),
+                'valoresMensais' => array_fill_keys($todasCompetencias, 0.0),
+                'novos' => array_fill_keys($todasCompetencias, 0),
                 'cancelados' => array_fill_keys($todasCompetencias, 0),
+                'valoresCancelados' => array_fill_keys($todasCompetencias, 0.0),
             ];
         }
         $relatorios[$chave]['quantidades'][$linha['competencia']] = (int) $linha['quantidade'];
+        $relatorios[$chave]['valoresMensais'][$linha['competencia']] = (float) $linha['valor_mensal'];
+    }
+
+    /* Novos contratos por plano: primeira aparicao de tutor + pet + plano. */
+    $chavesVistas = [];
+    $historicoNovos = $pdo->query(
+        "SELECT DATE_FORMAT(competencia, '%Y-%m') AS competencia,
+                cliente_nome, pet_nome, plano_nome
+           FROM historico_planos ORDER BY competencia, id"
+    );
+    foreach ($historicoNovos->fetchAll() as $linha) {
+        $chaveMovimento = chaveMovimentoPlano($linha['cliente_nome'], $linha['pet_nome'], $linha['plano_nome']);
+        if (isset($chavesVistas[$chaveMovimento])) continue;
+        $chavesVistas[$chaveMovimento] = true;
+        $chavePlano = $normalizarNomePlano($linha['plano_nome']);
+        if (isset($relatorios[$chavePlano])) {
+            $relatorios[$chavePlano]['novos'][$linha['competencia']]++;
+        }
+    }
+    foreach ($assinaturas as $assinatura) {
+        if ($assinatura['status'] !== 'Ativo') continue;
+        $chaveMovimento = chaveMovimentoPlano($assinatura['cliente'], $assinatura['pet'], $assinatura['plano']);
+        if (isset($chavesVistas[$chaveMovimento])) continue;
+        $chavesVistas[$chaveMovimento] = true;
+        $chavePlano = $normalizarNomePlano($assinatura['plano']);
+        if (isset($relatorios[$chavePlano])) {
+            $relatorios[$chavePlano]['novos'][$movimentos['competenciaAtual']]++;
+        }
     }
 
     $cancelamentosPorPlano = $pdo->query(
         "SELECT DATE_FORMAT(competencia, '%Y-%m') AS competencia,
-                plano_nome, SUM(quantidade) AS quantidade
+                plano_nome, SUM(quantidade) AS quantidade,
+                ROUND(SUM(valor), 2) AS valor
            FROM cancelamentos
           WHERE plano_nome IS NOT NULL AND TRIM(plano_nome) <> ''
           GROUP BY competencia, plano_nome
@@ -169,22 +208,30 @@ try {
         if (!isset($relatorios[$chave])) {
             $relatorios[$chave] = [
                 'nome' => $linha['plano_nome'],
+                'valorPlano' => 0.0,
                 'quantidadeAtual' => 0,
                 'projecaoAtual' => 0.0,
                 'quantidades' => array_fill_keys($todasCompetencias, 0),
+                'valoresMensais' => array_fill_keys($todasCompetencias, 0.0),
+                'novos' => array_fill_keys($todasCompetencias, 0),
                 'cancelados' => array_fill_keys($todasCompetencias, 0),
+                'valoresCancelados' => array_fill_keys($todasCompetencias, 0.0),
             ];
         }
         $relatorios[$chave]['cancelados'][$linha['competencia']] = (int) $linha['quantidade'];
+        $relatorios[$chave]['valoresCancelados'][$linha['competencia']] = (float) $linha['valor'];
     }
 
     $relatoriosPlanos = array_map(
         static function (array $relatorio) use ($todasCompetencias, $rotulosCompetencias): array {
             return [
                 'nome' => $relatorio['nome'],
+                'valorPlano' => (float) $relatorio['valorPlano'],
                 'quantidadeAtual' => (int) $relatorio['quantidadeAtual'],
                 'projecaoAtual' => (float) $relatorio['projecaoAtual'],
                 'totalCancelados' => array_sum($relatorio['cancelados']),
+                'valorTotalCancelado' => array_sum($relatorio['valoresCancelados']),
+                'novosMesAtual' => (int) ($relatorio['novos'][date('Y-m')] ?? 0),
                 'labels' => $rotulosCompetencias,
                 'quantidades' => array_map(
                     static fn (string $competencia): int => $relatorio['quantidades'][$competencia] ?? 0,
@@ -192,6 +239,18 @@ try {
                 ),
                 'cancelados' => array_map(
                     static fn (string $competencia): int => $relatorio['cancelados'][$competencia] ?? 0,
+                    $todasCompetencias
+                ),
+                'novos' => array_map(
+                    static fn (string $competencia): int => $relatorio['novos'][$competencia] ?? 0,
+                    $todasCompetencias
+                ),
+                'valoresMensais' => array_map(
+                    static fn (string $competencia): float => (float) ($relatorio['valoresMensais'][$competencia] ?? 0),
+                    $todasCompetencias
+                ),
+                'valoresCancelados' => array_map(
+                    static fn (string $competencia): float => (float) ($relatorio['valoresCancelados'][$competencia] ?? 0),
                     $todasCompetencias
                 ),
             ];
