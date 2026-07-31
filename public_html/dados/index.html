@@ -166,41 +166,41 @@
 
         <div class="cartao cartao-hover animar-entrada atraso-4 p-5 flex items-start justify-between">
           <div>
-            <p class="text-sm text-slate-500 font-medium">Planos vencendo</p>
-            <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="kpi-planos-vencendo">0</p>
+            <p class="text-sm text-slate-500 font-medium">Planos cancelados</p>
+            <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="kpi-planos-cancelados">0</p>
           </div>
           <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:#d977061a;">
-            <i data-lucide="clock" class="w-5 h-5" style="color:#d97706;"></i>
+            <i data-lucide="x-circle" class="w-5 h-5" style="color:#d97706;"></i>
           </div>
         </div>
 
         <div class="cartao cartao-hover animar-entrada atraso-5 p-5 flex items-start justify-between">
           <div>
-            <p class="text-sm text-slate-500 font-medium">Planos vencidos</p>
-            <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="kpi-planos-vencidos">0</p>
+            <p class="text-sm text-slate-500 font-medium">Nomes de planos</p>
+            <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="kpi-tipos-planos">0</p>
           </div>
           <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:#dc26261a;">
-            <i data-lucide="circle-alert" class="w-5 h-5" style="color:#dc2626;"></i>
+            <i data-lucide="clipboard-list" class="w-5 h-5" style="color:#dc2626;"></i>
           </div>
         </div>
 
       </div>
 
-      <!-- ===================== Resumo financeiro ===================== -->
+      <!-- ===================== Resumo dos planos ===================== -->
       <div class="flex items-center justify-between mb-3">
         <div>
           <h2 class="text-base font-semibold text-slate-900">Resumo financeiro</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Valores calculados pelas assinaturas cadastradas</p>
+          <p class="text-xs text-slate-500 mt-0.5">Projecao calculada pelos valores das assinaturas ativas</p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
 
         <div class="cartao cartao-hover animar-entrada atraso-1 p-5">
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm text-slate-500 font-medium">Receita de planos ativos</p>
-              <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="finance-receita-ativa">R$ 0,00</p>
+              <p class="text-sm text-slate-500 font-medium">Projecao mensal dos planos ativos</p>
+              <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="finance-projecao">R$ 0,00</p>
             </div>
             <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:#16a34a1a;">
               <i data-lucide="wallet" class="w-5 h-5" style="color:#16a34a;"></i>
@@ -209,43 +209,7 @@
           <div class="mt-3">
             <span class="selo selo-verde">
               <i data-lucide="trending-up" class="w-3 h-3"></i>
-              Assinaturas vigentes
-            </span>
-          </div>
-        </div>
-
-        <div class="cartao cartao-hover animar-entrada atraso-2 p-5">
-          <div class="flex items-start justify-between">
-            <div>
-              <p class="text-sm text-slate-500 font-medium">A receber (pendentes)</p>
-              <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="finance-a-receber">R$ 0,00</p>
-            </div>
-            <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:#d977061a;">
-              <i data-lucide="clock" class="w-5 h-5" style="color:#d97706;"></i>
-            </div>
-          </div>
-          <div class="mt-3">
-            <span class="selo selo-verde">
-              <i data-lucide="trending-down" class="w-3 h-3"></i>
-              Assinaturas com início futuro
-            </span>
-          </div>
-        </div>
-
-        <div class="cartao cartao-hover animar-entrada atraso-3 p-5">
-          <div class="flex items-start justify-between">
-            <div>
-              <p class="text-sm text-slate-500 font-medium">Prejuizo (planos vencidos)</p>
-              <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="finance-prejuizo">R$ 0,00</p>
-            </div>
-            <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:#dc26261a;">
-              <i data-lucide="trending-down" class="w-5 h-5" style="color:#dc2626;"></i>
-            </div>
-          </div>
-          <div class="mt-3">
-            <span class="selo selo-vermelho">
-              <i data-lucide="trending-up" class="w-3 h-3"></i>
-              Assinaturas vencidas
+              Soma dos valores mensais
             </span>
           </div>
         </div>
@@ -253,8 +217,8 @@
         <div class="cartao cartao-hover animar-entrada atraso-4 p-5">
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm text-slate-500 font-medium">Perdas (cancelamentos)</p>
-              <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="finance-perdas">R$ 0,00</p>
+              <p class="text-sm text-slate-500 font-medium">Cancelamentos importados</p>
+              <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="finance-cancelados">0</p>
             </div>
             <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:#64748b1a;">
               <i data-lucide="x-circle" class="w-5 h-5" style="color:#64748b;"></i>
@@ -263,19 +227,19 @@
           <div class="mt-3">
             <span class="selo selo-verde">
               <i data-lucide="trending-down" class="w-3 h-3"></i>
-              Assinaturas canceladas
+              Registros da planilha
             </span>
           </div>
         </div>
 
       </div>
 
-      <!-- ===================== Receita mensal ===================== -->
+      <!-- ===================== Projecao mensal ===================== -->
       <div class="cartao animar-entrada atraso-5 p-5 mb-6">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h2 class="text-sm font-semibold text-slate-900">Receita mensal</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Planos ativos - ultimos 6 meses</p>
+            <p class="text-xs text-slate-500 mt-0.5">Historico dos valores dos planos</p>
           </div>
         </div>
         <div class="caixa-grafico" style="height:220px;">
@@ -288,8 +252,8 @@
         <div class="cartao animar-entrada atraso-2 p-5 lg:col-span-2">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h2 class="text-sm font-semibold text-slate-900">Novos clientes por mes</h2>
-              <p class="text-xs text-slate-500 mt-0.5">Ultimos 6 meses</p>
+              <h2 class="text-sm font-semibold text-slate-900">Quantidade de planos por mes</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Historico importado da planilha</p>
             </div>
           </div>
           <div class="caixa-grafico" style="height:260px;">
@@ -300,8 +264,8 @@
         <div class="cartao animar-entrada atraso-3 p-5">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h2 class="text-sm font-semibold text-slate-900">Planos por status</h2>
-              <p class="text-xs text-slate-500 mt-0.5">Distribuicao atual</p>
+              <h2 class="text-sm font-semibold text-slate-900">Ativos e cancelados</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Situacao geral dos planos</p>
             </div>
           </div>
           <div class="caixa-grafico" style="height:260px;">
@@ -320,3 +284,4 @@
 <script src="js/dashboard.js"></script>
 </body>
 </html>
+

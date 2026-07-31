@@ -16,12 +16,15 @@ try {
             (SELECT COUNT(*) FROM pets) AS total_pets,
             (SELECT COUNT(*) FROM assinaturas WHERE status = 'Ativo') AS planos_ativos,
             (SELECT COUNT(*) FROM assinaturas WHERE status = 'Cancelado') AS planos_cancelados,
+            (SELECT COALESCE(SUM(quantidade), 0) FROM cancelamentos) AS cancelamentos_importados,
             (SELECT COUNT(*) FROM planos WHERE ativo = 1) AS tipos_planos,
             (SELECT COALESCE(SUM(valor_mensal), 0) FROM assinaturas WHERE status = 'Ativo') AS projecao"
     )->fetch();
 
     $ativos = (int) $metricas['planos_ativos'];
     $projecao = (float) $metricas['projecao'];
+    $cancelados = (int) $metricas['planos_cancelados']
+        + (int) $metricas['cancelamentos_importados'];
 
     $historico = $pdo->query(
         "SELECT DATE_FORMAT(competencia, '%Y-%m') AS competencia,
@@ -55,7 +58,7 @@ try {
             'totalClientes' => (int) $metricas['total_clientes'],
             'totalPets' => (int) $metricas['total_pets'],
             'planosAtivos' => $ativos,
-            'planosCancelados' => (int) $metricas['planos_cancelados'],
+            'planosCancelados' => $cancelados,
             'tiposPlanos' => (int) $metricas['tipos_planos'],
         ],
         'projecao' => [

@@ -1,44 +1,33 @@
-/** Dashboard alimentado exclusivamente por dados do MySQL. */
+/** Dashboard conectado aos dados reais, preservando o layout personalizado. */
 
-function preencherIdentidade(usuario) {
-  document.querySelectorAll('[data-usuario-nome]').forEach((elemento) => {
-    elemento.textContent = usuario.nome;
-  });
-  document.querySelectorAll('[data-usuario-email]').forEach((elemento) => {
-    elemento.textContent = usuario.email;
-  });
-  document.querySelectorAll('[data-usuario-iniciais]').forEach((elemento) => {
-    elemento.textContent = usuario.iniciais;
-  });
+function definirTexto(id, valor) {
+  const elemento = document.getElementById(id);
+  if (elemento) elemento.textContent = valor;
 }
 
-function preencherKpiCards(stats) {
-  document.getElementById('kpi-total-clientes').textContent = stats.totalClientes;
-  document.getElementById('kpi-total-pets').textContent = stats.totalPets;
-  document.getElementById('kpi-planos-ativos').textContent = stats.planosAtivos;
-  document.getElementById('kpi-planos-vencendo').textContent = stats.planosVencendo;
-  document.getElementById('kpi-planos-vencidos').textContent = stats.planosVencidos;
+function rotuloCompetencia(competencia) {
+  const [ano, mes] = competencia.split('-');
+  return `${mes}/${ano}`;
 }
 
-function preencherFinanceCards(financeiro) {
-  document.getElementById('finance-receita-ativa').textContent =
-    formatCurrency(Number(financeiro.receitaAtiva));
-  document.getElementById('finance-a-receber').textContent =
-    formatCurrency(Number(financeiro.aReceber));
-  document.getElementById('finance-prejuizo').textContent =
-    formatCurrency(Number(financeiro.prejuizo));
-  document.getElementById('finance-perdas').textContent =
-    formatCurrency(Number(financeiro.perdas));
+function preencherResumo(resultado) {
+  definirTexto('kpi-total-clientes', resultado.kpis.totalClientes);
+  definirTexto('kpi-total-pets', resultado.kpis.totalPets);
+  definirTexto('kpi-planos-ativos', resultado.kpis.planosAtivos);
+  definirTexto('kpi-planos-cancelados', resultado.kpis.planosCancelados);
+  definirTexto('kpi-tipos-planos', resultado.kpis.tiposPlanos);
+  definirTexto('finance-projecao', formatCurrency(Number(resultado.projecao.mensal)));
+  definirTexto('finance-cancelados', resultado.kpis.planosCancelados);
 }
 
-function renderRevenueChart(series) {
+function renderRevenueChart(historico) {
   new Chart(document.getElementById('revenueChart'), {
     type: 'line',
     data: {
-      labels: series.labels,
+      labels: historico.map((item) => rotuloCompetencia(item.competencia)),
       datasets: [{
-        label: 'Receita',
-        data: series.receitaMensal,
+        label: 'Projecao',
+        data: historico.map((item) => item.projecao),
         borderColor: '#16a34a',
         backgroundColor: 'rgba(22, 163, 74, 0.1)',
         fill: true,
@@ -56,29 +45,21 @@ function renderRevenueChart(series) {
         tooltip: { callbacks: { label: (item) => formatCurrency(Number(item.raw)) } },
       },
       scales: {
-        y: {
-          beginAtZero: true,
-          grid: { color: '#f1f5f9' },
-          ticks: {
-            color: '#94a3b8',
-            font: { size: 11 },
-            callback: (valor) => formatCurrency(Number(valor)),
-          },
-        },
-        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+        y: { beginAtZero: true, ticks: { callback: (valor) => formatCurrency(Number(valor)) } },
+        x: { grid: { display: false } },
       },
     },
   });
 }
 
-function renderNewClientsChart(series) {
+function renderQuantityChart(historico) {
   new Chart(document.getElementById('newClientsChart'), {
     type: 'bar',
     data: {
-      labels: series.labels,
+      labels: historico.map((item) => rotuloCompetencia(item.competencia)),
       datasets: [{
-        label: 'Novos clientes',
-        data: series.novosClientes,
+        label: 'Planos',
+        data: historico.map((item) => item.quantidade),
         backgroundColor: '#f1c744',
         borderRadius: 6,
         maxBarThickness: 34,
@@ -89,25 +70,21 @@ function renderNewClientsChart(series) {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        y: {
-          beginAtZero: true,
-          grid: { color: '#f1f5f9' },
-          ticks: { precision: 0, color: '#94a3b8', font: { size: 11 } },
-        },
-        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+        y: { beginAtZero: true, ticks: { precision: 0 } },
+        x: { grid: { display: false } },
       },
     },
   });
 }
 
-function renderPlanStatusChart(status) {
+function renderStatusChart(kpis) {
   new Chart(document.getElementById('planStatusChart'), {
     type: 'doughnut',
     data: {
-      labels: status.labels,
+      labels: ['Ativos', 'Cancelados'],
       datasets: [{
-        data: status.valores,
-        backgroundColor: status.cores,
+        data: [kpis.planosAtivos, kpis.planosCancelados],
+        backgroundColor: ['#16a34a', '#94a3b8'],
         borderWidth: 0,
         hoverOffset: 4,
       }],
@@ -119,13 +96,7 @@ function renderPlanStatusChart(status) {
       plugins: {
         legend: {
           position: 'bottom',
-          labels: {
-            usePointStyle: true,
-            pointStyle: 'circle',
-            padding: 16,
-            font: { size: 12 },
-            color: '#475569',
-          },
+          labels: { usePointStyle: true, pointStyle: 'circle', padding: 16 },
         },
       },
     },
@@ -153,22 +124,22 @@ async function carregarDashboard() {
       return;
     }
     if (!resposta.ok) {
-      throw new Error(resultado.mensagem || 'Não foi possível carregar os dados.');
+      throw new Error(resultado.mensagem || 'Nao foi possivel carregar os dados.');
     }
 
-    preencherIdentidade(resultado.usuario);
-    preencherKpiCards(resultado.kpis);
-    preencherFinanceCards(resultado.financeiro);
-    renderRevenueChart(resultado.series);
-    renderNewClientsChart(resultado.series);
-    renderPlanStatusChart(resultado.series.statusPlanos);
+    preencherResumo(resultado);
+    renderRevenueChart(resultado.historico);
+    renderQuantityChart(resultado.historico);
+    renderStatusChart(resultado.kpis);
 
-    const atualizado = new Date(resultado.atualizadoEm);
-    document.getElementById('dashboard-atualizado').textContent =
-      `Atualizado em ${atualizado.toLocaleString('pt-BR')}`;
+    definirTexto(
+      'dashboard-atualizado',
+      `Atualizado em ${new Date(resultado.atualizadoEm).toLocaleString('pt-BR')}`
+    );
   } catch (erro) {
-    mensagemErro.querySelector('span').textContent = erro.message;
-    mensagemErro.hidden = false;
+    const textoErro = mensagemErro?.querySelector('span');
+    if (textoErro) textoErro.textContent = erro.message;
+    if (mensagemErro) mensagemErro.hidden = false;
   }
 }
 
