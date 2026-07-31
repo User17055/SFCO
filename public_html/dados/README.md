@@ -1,8 +1,8 @@
 # TudoPraPet: cadastro funcional com PHP e MySQL
 
-Esta pasta é uma cópia funcional de `public_html/dados`. A pasta original não
-foi alterada. O cadastro deixou de ser uma simulação em JavaScript e agora salva
-o tutor, seus pets e as assinaturas no banco MySQL.
+Esta é a versão funcional instalada em `public_html/dados`. O cadastro deixou
+de ser uma simulação em JavaScript e agora salva o tutor, seus pets e as
+assinaturas no banco MySQL.
 
 ## Estado da instalação
 
@@ -10,13 +10,13 @@ O banco de testes `dadosplanilha` já está configurado em
 `config/banco.php`. A conexão foi testada com sucesso no MySQL 5.7 da
 hospedagem, e a coluna necessária `pets.nascimento` já foi adicionada.
 
-Para publicar, envie o conteúdo da pasta `tutorial` ao servidor. O PHP precisa
+Para publicar, envie o conteúdo da pasta `dados` ao servidor. O PHP precisa
 ser versão 8 ou superior e ter a extensão `pdo_mysql` habilitada.
 
 ## Arquivos importantes
 
 ```text
-tutorial/
+dados/
 ├── api/
 │   └── cadastrar.php       recebe, valida e grava o cadastro
 ├── config/
