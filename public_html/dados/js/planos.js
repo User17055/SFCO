@@ -271,6 +271,7 @@ function renderRelatoriosPlanos() {
 
 async function carregarPlanos() {
   const erro = document.getElementById('planos-erro');
+  mostrarCarregamento('Carregando planos...', 'Preparando assinaturas, cancelamentos e relatorios mensais.');
   try {
     const resposta = await fetch('api/planos.php', { headers: { Accept: 'application/json' }, cache: 'no-store' });
     const resultado = await resposta.json();
@@ -285,7 +286,13 @@ async function carregarPlanos() {
       return;
     }
     if (!resposta.ok) throw new Error(resultado.mensagem);
-    dadosPlanos = resultado;
+    dadosPlanos = {
+      ...resultado,
+      assinaturas: Array.isArray(resultado.assinaturas) ? resultado.assinaturas : [],
+      cancelamentosImportados: Array.isArray(resultado.cancelamentosImportados) ? resultado.cancelamentosImportados : [],
+      relatoriosPlanos: Array.isArray(resultado.relatoriosPlanos) ? resultado.relatoriosPlanos : [],
+    };
+    if (!resultado.crescimento) throw new Error('O historico mensal dos planos nao foi retornado.');
     renderPlansPeriodChart(resultado.crescimento);
     renderRelatoriosPlanos();
     renderDiretorio();
@@ -293,6 +300,8 @@ async function carregarPlanos() {
     const texto = erro?.querySelector('span');
     if (texto) texto.textContent = falha.message || 'Nao foi possivel carregar os planos.';
     if (erro) erro.hidden = false;
+  } finally {
+    ocultarCarregamento();
   }
 }
 

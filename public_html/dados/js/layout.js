@@ -4,6 +4,41 @@
  * este arquivo so adiciona interatividade a ela.
  */
 
+function garantirTelaCarregamento() {
+  let tela = document.getElementById('tela-carregamento');
+  if (tela || !document.body) return tela;
+
+  tela = document.createElement('div');
+  tela.id = 'tela-carregamento';
+  tela.className = 'tela-carregamento tela-carregamento-oculta';
+  tela.setAttribute('role', 'status');
+  tela.setAttribute('aria-live', 'polite');
+  tela.innerHTML = `
+    <div class="tela-carregamento-conteudo">
+      <div class="tela-carregamento-marca"><span>Tudo</span>Pra<span>Pet</span></div>
+      <div class="tela-carregamento-spinner" aria-hidden="true"></div>
+      <strong id="tela-carregamento-titulo">Carregando dados...</strong>
+      <span id="tela-carregamento-detalhe">Aguarde um instante.</span>
+    </div>`;
+  document.body.appendChild(tela);
+  return tela;
+}
+
+window.mostrarCarregamento = function (titulo = 'Carregando dados...', detalhe = 'Aguarde um instante.') {
+  const tela = garantirTelaCarregamento();
+  if (!tela) return;
+  document.getElementById('tela-carregamento-titulo').textContent = titulo;
+  document.getElementById('tela-carregamento-detalhe').textContent = detalhe;
+  tela.classList.remove('tela-carregamento-oculta');
+  document.body.setAttribute('aria-busy', 'true');
+};
+
+window.ocultarCarregamento = function () {
+  const tela = document.getElementById('tela-carregamento');
+  if (tela) tela.classList.add('tela-carregamento-oculta');
+  document.body.removeAttribute('aria-busy');
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   const toggle = document.getElementById('sidebar-toggle');
   const sidebar = document.querySelector('.barra-lateral');

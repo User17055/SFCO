@@ -122,18 +122,27 @@ function renderPlanStatusChart(status) {
 }
 
 async function carregarClientes() {
+  mostrarCarregamento('Carregando clientes...', 'Buscando clientes e preparando os graficos.');
   try {
     const resposta = await fetch('api/clientes.php', { headers: { Accept: 'application/json' }, cache: 'no-store' });
     const resultado = await resposta.json();
     if (tratarAcesso(resposta, resultado)) return;
     if (!resposta.ok) throw new Error(resultado.mensagem);
-    preencherTabelaClientes(resultado.clientes);
-    renderNewClientsChart(resultado.series);
-    renderPlanStatusChart(resultado.series.statusPlanos);
+    const clientes = Array.isArray(resultado.clientes) ? resultado.clientes : [];
+    const series = resultado.series || {
+      labels: [],
+      novosClientes: [],
+      statusPlanos: { labels: [], valores: [], cores: [] },
+    };
+    preencherTabelaClientes(clientes);
+    renderNewClientsChart(series);
+    renderPlanStatusChart(series.statusPlanos);
   } catch (erro) {
     const corpo = document.getElementById('clients-body');
     corpo.innerHTML = `<tr><td colspan="6" class="text-center text-red-700 py-8"></td></tr>`;
     corpo.querySelector('td').textContent = erro.message || 'Não foi possível carregar os clientes.';
+  } finally {
+    ocultarCarregamento();
   }
 }
 

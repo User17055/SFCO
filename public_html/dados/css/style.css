@@ -715,3 +715,76 @@ html, body {
   color: var(--color-orange-dark);
   text-decoration: underline;
 }
+
+/* Tela de carregamento das paginas que consultam o banco. */
+.tela-carregamento {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(244, 247, 251, 0.94);
+  backdrop-filter: blur(5px);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.tela-carregamento-oculta {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.tela-carregamento-conteudo {
+  width: min(360px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 26px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 20px 55px rgba(15, 23, 42, 0.14);
+  color: #334155;
+  text-align: center;
+}
+
+.tela-carregamento-marca {
+  margin-bottom: 4px;
+  color: #2f5fa8;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.tela-carregamento-marca span {
+  color: #f1c744;
+}
+
+.tela-carregamento-spinner {
+  width: 42px;
+  height: 42px;
+  margin: 4px 0 6px;
+  border: 4px solid #e7edf6;
+  border-top-color: #2f5fa8;
+  border-right-color: #f1c744;
+  border-radius: 50%;
+  animation: girar-carregamento 0.8s linear infinite;
+}
+
+.tela-carregamento-conteudo strong {
+  color: #1e293b;
+  font-size: 15px;
+}
+
+.tela-carregamento-conteudo > span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+@keyframes girar-carregamento {
+  to { transform: rotate(360deg); }
+}
