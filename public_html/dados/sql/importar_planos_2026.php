@@ -135,15 +135,20 @@ try {
     }
     $pdo->exec("UPDATE planos SET ativo = 0 WHERE nome IN ('Bronze', 'Prata', 'Ouro')");
 
+    /*
+     * Cada execucao representa o retrato completo da planilha. As chaves de
+     * origem usam a linha do Excel; por isso removemos o retrato anterior antes
+     * de gravar o novo. Isso evita sobras quando linhas forem inseridas,
+     * removidas ou movidas na planilha atualizada.
+     */
+    $pdo->prepare('DELETE FROM historico_planos WHERE origem = ?')
+        ->execute(['PLANOS 2026 - DETAILS']);
+    $pdo->prepare('DELETE FROM cancelamentos WHERE origem = ?')
+        ->execute(['PLANOS 2026 - CANCELAMENTOS']);
+    $pdo->exec("DELETE FROM assinaturas WHERE origem LIKE 'PLANOS 2026 - %'");
+
     $contadores['historico'] = importarHistorico($pdo, $dados['historico']);
     $contadores['cancelamentos'] = importarCancelamentos($pdo, $dados['cancelamentos']);
-
-    $pdo->exec(
-        "UPDATE assinaturas
-            SET status = 'Cancelado', cancelado_em = NOW(),
-                motivo_cancelamento = 'Ausente na ultima importacao da planilha'
-          WHERE origem = 'PLANOS 2026 - JULHO'"
-    );
 
     $cliente = $pdo->prepare(
         'INSERT INTO clientes (codigo_externo, nome, cpf, email, telefone, observacoes)
@@ -215,11 +220,27 @@ try {
     $contadores['clientes'] = count($clientesVistos);
     $contadores['pets'] = count($petsVistos);
 
+    /* Remove apenas cadastros importados que ficaram sem assinatura atual. */
+    $pdo->exec(
+        "DELETE p FROM pets p
+          LEFT JOIN assinaturas a ON a.pet_id = p.id
+         WHERE p.observacoes = 'Importado automaticamente da planilha PLANOS 2026.'
+           AND a.id IS NULL"
+    );
+    $pdo->exec(
+        "DELETE c FROM clientes c
+          LEFT JOIN pets p ON p.cliente_id = c.id
+         WHERE c.observacoes = 'Importado automaticamente da planilha PLANOS 2026.'
+           AND p.id IS NULL"
+    );
+
     $pdo->commit();
     echo json_encode([
         'sucesso' => true,
         'importados' => $contadores,
-        'projecao_julho' => $dados['resumo']['projecao_julho'] ?? null,
+        'projecao_atual' => $dados['resumo']['projecao_atual']
+            ?? $dados['resumo']['projecao_julho']
+            ?? null,
         'avisos' => $dados['avisos'] ?? [],
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL;
 } catch (Throwable $erro) {

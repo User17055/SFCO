@@ -27,6 +27,7 @@ function assinaturasParaExibir() {
       valorMensal: item.valor,
       status: 'Cancelado',
       motivoCancelamento: item.motivo,
+      tentativaRecuperacao: item.tentativaRecuperacao,
       competencia: item.competencia,
       tipoRegistro: 'cancelamento-importado',
     }));
@@ -68,6 +69,7 @@ function criarDetalhePlano(item) {
 
   if (item.adicional) caixa.appendChild(criarElemento('p', 'text-xs text-slate-500 mt-2', `Adicional: ${item.adicional}`));
   if (item.motivoCancelamento) caixa.appendChild(criarElemento('p', 'text-xs text-red-600 mt-2', `Motivo: ${item.motivoCancelamento}`));
+  if (item.tentativaRecuperacao) caixa.appendChild(criarElemento('p', 'text-xs text-slate-500 mt-2', `Tentativa de recuperacao: ${item.tentativaRecuperacao}`));
   if (item.observacoes) caixa.appendChild(criarElemento('p', 'text-xs text-slate-500 mt-2', item.observacoes));
   return caixa;
 }

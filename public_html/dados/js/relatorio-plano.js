@@ -33,22 +33,30 @@ function criarGrafico(id, configuracao) {
 function preencherCancelamentos(relatorio) {
   const corpo = document.getElementById('historico-cancelamentos-plano');
   corpo.innerHTML = '';
-  const registros = relatorio.labels.map((mes, indice) => ({
-    mes,
-    quantidade: Number(relatorio.cancelados[indice] || 0),
-    valor: Number(relatorio.valoresCancelados[indice] || 0),
-  })).filter((item) => item.quantidade > 0 || item.valor > 0);
+  const registros = Array.isArray(relatorio.motivosCancelamentos)
+    ? relatorio.motivosCancelamentos
+    : [];
 
   if (registros.length === 0) {
     const linha = document.createElement('tr');
-    linha.innerHTML = '<td colspan="3" class="text-center text-slate-500 py-8">Nenhum cancelamento identificado para este plano.</td>';
+    linha.innerHTML = '<td colspan="6" class="text-center text-slate-500 py-8">Nenhum cancelamento identificado para este plano.</td>';
     corpo.appendChild(linha);
     return;
   }
 
-  registros.reverse().forEach((item) => {
+  [...registros].reverse().forEach((item) => {
     const linha = document.createElement('tr');
-    [item.mes, String(item.quantidade), formatCurrency(item.valor)].forEach((valor) => {
+    const competencia = item.competencia
+      ? new Date(`${item.competencia}T12:00:00`).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })
+      : '-';
+    [
+      competencia,
+      item.cliente || '-',
+      item.motivo || 'Motivo nao informado',
+      item.tentativaRecuperacao || '-',
+      String(item.quantidade || 0),
+      formatCurrency(Number(item.valor || 0)),
+    ].forEach((valor) => {
       const celula = document.createElement('td');
       celula.textContent = valor;
       linha.appendChild(celula);

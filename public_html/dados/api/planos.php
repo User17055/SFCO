@@ -68,7 +68,8 @@ try {
     );
 
     $cancelamentosConsulta = $pdo->query(
-        "SELECT id, cliente_nome, plano_nome, competencia, motivo, valor, quantidade
+        "SELECT id, cliente_nome, plano_nome, competencia, motivo,
+                tentativa_recuperacao, valor, quantidade
            FROM cancelamentos ORDER BY competencia DESC, id DESC LIMIT 500"
     );
     $cancelamentos = array_map(static fn (array $linha): array => [
@@ -77,6 +78,7 @@ try {
         'plano' => $linha['plano_nome'] ?? 'Nao informado',
         'competencia' => $linha['competencia'],
         'motivo' => $linha['motivo'] ?? '',
+        'tentativaRecuperacao' => $linha['tentativa_recuperacao'] ?? '',
         'valor' => (float) $linha['valor'],
         'quantidade' => (int) $linha['quantidade'],
     ], $cancelamentosConsulta->fetchAll());
@@ -140,6 +142,7 @@ try {
             'novos' => array_fill_keys($todasCompetencias, 0),
             'cancelados' => array_fill_keys($todasCompetencias, 0),
             'valoresCancelados' => array_fill_keys($todasCompetencias, 0.0),
+            'motivosCancelamentos' => [],
         ];
         $relatorios[$chave]['quantidades'][$movimentos['competenciaAtual']] = $plano['quantidadeAtiva'];
         $relatorios[$chave]['valoresMensais'][$movimentos['competenciaAtual']] = $plano['projecao'];
@@ -166,6 +169,7 @@ try {
                 'novos' => array_fill_keys($todasCompetencias, 0),
                 'cancelados' => array_fill_keys($todasCompetencias, 0),
                 'valoresCancelados' => array_fill_keys($todasCompetencias, 0.0),
+                'motivosCancelamentos' => [],
             ];
         }
         $relatorios[$chave]['quantidades'][$linha['competencia']] = (int) $linha['quantidade'];
@@ -222,10 +226,26 @@ try {
                 'novos' => array_fill_keys($todasCompetencias, 0),
                 'cancelados' => array_fill_keys($todasCompetencias, 0),
                 'valoresCancelados' => array_fill_keys($todasCompetencias, 0.0),
+                'motivosCancelamentos' => [],
             ];
         }
         $relatorios[$chave]['cancelados'][$linha['competencia']] = (int) $linha['quantidade'];
         $relatorios[$chave]['valoresCancelados'][$linha['competencia']] = (float) $linha['valor'];
+    }
+
+    foreach ($cancelamentos as $cancelamento) {
+        if ($cancelamento['plano'] === 'Nao informado') continue;
+        $chave = $normalizarNomePlano($cancelamento['plano']);
+        $chave = $aliasesCancelamentos[$chave] ?? $chave;
+        if (!isset($relatorios[$chave])) continue;
+        $relatorios[$chave]['motivosCancelamentos'][] = [
+            'cliente' => $cancelamento['cliente'],
+            'competencia' => $cancelamento['competencia'],
+            'motivo' => $cancelamento['motivo'],
+            'tentativaRecuperacao' => $cancelamento['tentativaRecuperacao'],
+            'quantidade' => $cancelamento['quantidade'],
+            'valor' => $cancelamento['valor'],
+        ];
     }
 
     $relatoriosPlanos = array_map(
@@ -259,6 +279,7 @@ try {
                     static fn (string $competencia): float => (float) ($relatorio['valoresCancelados'][$competencia] ?? 0),
                     $todasCompetencias
                 ),
+                'motivosCancelamentos' => $relatorio['motivosCancelamentos'],
             ];
         },
         array_values($relatorios)

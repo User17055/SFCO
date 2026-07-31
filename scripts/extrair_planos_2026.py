@@ -14,16 +14,6 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 
-MESES_DETAILS = {
-    "DEZEMBRO 2025": "2025-12-01",
-    "JANEIRO": "2026-01-01",
-    "FEVEREIRO": "2026-02-01",
-    "MARCO": "2026-03-01",
-    "ABRIL": "2026-04-01",
-    "MAIO": "2026-05-01",
-    "JUNHO": "2026-06-01",
-}
-
 NUMERO_MES = {
     "JANEIRO": 1,
     "FEVEREIRO": 2,
@@ -87,6 +77,9 @@ def normalizar_plano(valor) -> str:
         "PUPPY": "PLANO PUPPY",
         "PUPY": "PLANO PUPPY",
         "PACOET BANHO QUINZENAL": "PACOTE BANHO QUINZENAL",
+        "VIP": "PLANO VIP",
+        "3 SUPER ECONOMICO FELINO": "PLANO ECONOMICO FELINO",
+        "SUPER ECONOMICO+2 BANHOS": "SUPER ECONOMICO + BANHOS",
     }
     return aliases.get(plano, plano) or "PLANO NAO INFORMADO"
 
@@ -97,6 +90,18 @@ def observacao(*valores) -> str:
 
 def extrair(caminho: Path) -> dict:
     workbook = load_workbook(caminho, data_only=True, read_only=True)
+    ano_encontrado = re.search(r"\b(20\d{2})\b", caminho.stem)
+    ano_atual = int(ano_encontrado.group(1)) if ano_encontrado else date.today().year
+    abas_mensais = {
+        NUMERO_MES[chave(nome)]: nome
+        for nome in workbook.sheetnames
+        if chave(nome) in NUMERO_MES
+    }
+    if not abas_mensais:
+        raise ValueError("Nenhuma aba mensal foi encontrada na planilha.")
+    mes_atual = max(abas_mensais)
+    nome_aba_atual = abas_mensais[mes_atual]
+    competencia_atual = f"{ano_atual:04d}-{mes_atual:02d}-01"
     historico = []
     atuais = []
     cancelamentos = []
@@ -110,7 +115,19 @@ def extrair(caminho: Path) -> dict:
         cliente_nome = texto(cliente)
         pet_nome = texto(pet)
         mes_chave = chave(mes)
-        competencia = MESES_DETAILS.get(mes_chave)
+        ano_no_mes = re.search(r"\b(20\d{2})\b", mes_chave)
+        mes_sem_ano = re.sub(r"\s+20\d{2}\b", "", mes_chave).strip()
+        mes_numero = NUMERO_MES.get(mes_sem_ano)
+        ano_competencia = (
+            int(ano_no_mes.group(1))
+            if ano_no_mes
+            else (ano_atual if mes_numero and mes_numero <= mes_atual else ano_atual - 1)
+        )
+        competencia = (
+            f"{ano_competencia:04d}-{mes_numero:02d}-01"
+            if mes_numero
+            else None
+        )
         if not competencia or not cliente_nome:
             continue
         if not pet_nome:
@@ -141,8 +158,8 @@ def extrair(caminho: Path) -> dict:
             "linha_origem": linha,
         })
 
-    julho = workbook["JULHO"]
-    for linha, valores in enumerate(julho.iter_rows(min_row=2, values_only=True), start=2):
+    aba_atual = workbook[nome_aba_atual]
+    for linha, valores in enumerate(aba_atual.iter_rows(min_row=2, values_only=True), start=2):
         dados = list(valores[:10]) + [None] * max(0, 10 - len(valores))
         inicio, reajuste, cliente, plano, adicional, valor, pet, pago, meses, comprovante = dados[:10]
         cliente_nome = texto(cliente)
@@ -153,14 +170,14 @@ def extrair(caminho: Path) -> dict:
         valor_mensal = numero(valor)
         if not texto(plano) or not isinstance(valor, (int, float)):
             avisos.append({
-                "aba": "JULHO",
+                "aba": nome_aba_atual,
                 "linha": linha,
                 "cliente": cliente_nome,
                 "pet": pet_nome,
                 "problema": "plano ausente" if not texto(plano) else "valor ausente",
             })
         atuais.append({
-            "codigo_externo": hash_codigo("JULHO", linha),
+            "codigo_externo": hash_codigo("ATUAL", linha),
             "cliente_codigo": hash_codigo("CLIENTE", cliente_nome),
             "pet_codigo": hash_codigo("PET", cliente_nome, pet_nome),
             "cliente_nome": cliente_nome,
@@ -171,7 +188,7 @@ def extrair(caminho: Path) -> dict:
             "data_reajuste": data_iso(reajuste),
             "adicional": texto(adicional) or None,
             "observacoes": observacao(pago, meses, comprovante) or None,
-            "origem": "PLANOS 2026 - JULHO",
+            "origem": "PLANOS 2026 - ATUAL",
         })
         if valor_mensal > 0:
             valores_planos[plano_nome][valor_mensal] += 1
@@ -186,9 +203,9 @@ def extrair(caminho: Path) -> dict:
         if not cliente_nome or mes_nome not in NUMERO_MES or qtd is None:
             continue
         mes_numero = NUMERO_MES[mes_nome]
-        # A planilha 2026 traz agosto-dezembro como historico de 2025 e
-        # janeiro-julho como o ano corrente de 2026.
-        ano = 2026 if mes_numero <= 7 else 2025
+        # Meses ate a aba atual pertencem ao ano da planilha; meses futuros
+        # pertencem ao historico do ano anterior.
+        ano = ano_atual if mes_numero <= mes_atual else ano_atual - 1
         cancelamentos.append({
             "codigo_externo": hash_codigo("CANCELAMENTOS", linha),
             "cliente_nome": cliente_nome,
@@ -209,7 +226,9 @@ def extrair(caminho: Path) -> dict:
 
     return {
         "arquivo_origem": str(caminho),
-        "competencia_atual": "2026-07-01",
+        "competencia_atual": competencia_atual,
+        "aba_atual": nome_aba_atual,
+        "origem_atual": "PLANOS 2026 - ATUAL",
         "historico": historico,
         "atuais": atuais,
         "cancelamentos": cancelamentos,
@@ -222,7 +241,7 @@ def extrair(caminho: Path) -> dict:
             "pets_atuais": len({x["pet_codigo"] for x in atuais}),
             "cancelamentos": len(cancelamentos),
             "tipos_planos": len(catalogo),
-            "projecao_julho": round(sum(x["valor_mensal"] for x in atuais), 2),
+            "projecao_atual": round(sum(x["valor_mensal"] for x in atuais), 2),
         },
     }
 
