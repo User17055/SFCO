@@ -187,3 +187,18 @@ MySQL:
 Uma assinatura futura é mostrada como pendente. Uma assinatura fora da data de
 vigência é mostrada como vencida. Cancelamentos usam o campo real
 `assinaturas.status`, adicionado pela migração.
+
+## Clientes, pets e planos reais
+
+As três páginas de consulta também foram conectadas ao MySQL:
+
+- `api/clientes.php` lista tutores, quantidade de pets, planos e status, além
+  dos gráficos reais de novos clientes e assinaturas por status;
+- `api/pets.php` lista pet, idade calculada, raça, tutor, plano mais recente e
+  status;
+- `api/planos.php` lista as assinaturas com cliente, pet, valor, vencimento e
+  status, além das contratações dos últimos seis meses.
+
+Os JavaScripts não carregam mais `js/data.js`, e o arquivo com os arrays
+`MOCK_*` foi removido. Quando uma tabela estiver vazia, a interface informa que
+nenhum registro foi cadastrado.

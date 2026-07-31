@@ -30,3 +30,30 @@ document.addEventListener('DOMContentLoaded', () => {
   // Desenha os icones (lucide) a partir dos atributos data-lucide do HTML
   if (window.lucide) lucide.createIcons();
 });
+
+async function carregarUsuarioLayout() {
+  if (!document.querySelector('[data-usuario-nome]')) return;
+
+  try {
+    const resposta = await fetch('api/usuario.php', {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+    });
+    const resultado = await resposta.json();
+    if (!resposta.ok) return;
+
+    document.querySelectorAll('[data-usuario-nome]').forEach((elemento) => {
+      elemento.textContent = resultado.usuario.nome;
+    });
+    document.querySelectorAll('[data-usuario-email]').forEach((elemento) => {
+      elemento.textContent = resultado.usuario.email;
+    });
+    document.querySelectorAll('[data-usuario-iniciais]').forEach((elemento) => {
+      elemento.textContent = resultado.usuario.iniciais;
+    });
+  } catch (_) {
+    // Os endpoints de cada pagina tratam uma eventual sessao expirada.
+  }
+}
+
+document.addEventListener('DOMContentLoaded', carregarUsuarioLayout);

@@ -1,49 +1,91 @@
-/**
- * Logica da pagina Clientes.
- * Toda a estrutura visual (tabela, cartoes dos graficos) ja existe pronta
- * no clientes.html. Aqui a gente so:
- *  - preenche os elementos existentes com os dados de js/data.js;
- *  - desenha os graficos (Chart.js) dentro dos <canvas> ja presentes.
- * Nenhuma funcao deste arquivo cria HTML novo.
- */
+function tratarAcesso(resposta, resultado) {
+  if (resposta.status === 401) {
+    sessionStorage.removeItem('tpp-auth');
+    window.location.replace('login.html');
+    return true;
+  }
+  if (resposta.status === 403 && resultado.trocarSenha) {
+    sessionStorage.removeItem('tpp-auth');
+    window.location.replace('trocar-senha.html');
+    return true;
+  }
+  return false;
+}
 
-/**
- * Preenche as linhas (ja existentes no HTML) da tabela de clientes.
- * So define texto/estilo dos elementos de cada linha - nao cria linhas novas.
- */
-function preencherTabelaClientes() {
-  const linhas = document.querySelectorAll('#clients-body tr');
-  const clientes = MOCK_CLIENTS.slice(0, linhas.length);
+function formatarCpfTabela(valor) {
+  const digitos = String(valor || '').replace(/\D/g, '');
+  if (digitos.length !== 11) return valor || '-';
+  return digitos.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
 
-  linhas.forEach((linha, i) => {
-    const cliente = clientes[i];
+function formatarTelefoneTabela(valor) {
+  const digitos = String(valor || '').replace(/\D/g, '');
+  if (digitos.length === 11) return digitos.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+  if (digitos.length === 10) return digitos.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+  return valor || '-';
+}
 
-    const avatar = linha.querySelector('.linha-avatar');
-    avatar.textContent = getInitials(cliente.name);
-    avatar.style.background = corAvatar(cliente.name);
+function celulaTexto(texto, classe = 'text-slate-600') {
+  const celula = document.createElement('td');
+  celula.className = classe;
+  celula.textContent = texto;
+  return celula;
+}
 
-    linha.querySelector('.linha-cliente').textContent = cliente.name;
-    linha.querySelector('.linha-telefone').textContent = cliente.phone;
-    linha.querySelector('.linha-cpf').textContent = cliente.cpf;
-    linha.querySelector('.linha-pets').textContent = cliente.petsCount;
-    linha.querySelector('.linha-plano').textContent = cliente.plan;
+function preencherTabelaClientes(clientes) {
+  const corpo = document.getElementById('clients-body');
+  corpo.innerHTML = '';
 
-    const selo = linha.querySelector('.linha-status');
-    selo.classList.add(STATUS_BADGE_MAP[cliente.status] || 'selo-cinza');
-    linha.querySelector('.linha-status-texto').textContent = cliente.status;
+  if (clientes.length === 0) {
+    const linha = document.createElement('tr');
+    const celula = celulaTexto('Nenhum cliente cadastrado.', 'text-center text-slate-500 py-8');
+    celula.colSpan = 6;
+    linha.appendChild(celula);
+    corpo.appendChild(linha);
+    return;
+  }
+
+  clientes.forEach((cliente) => {
+    const linha = document.createElement('tr');
+    const nomeCelula = document.createElement('td');
+    const grupo = document.createElement('div');
+    grupo.className = 'flex items-center gap-3';
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar-iniciais';
+    avatar.style.cssText = `width:32px;height:32px;font-size:12.16px;background:${corAvatar(cliente.nome)};`;
+    avatar.textContent = getInitials(cliente.nome);
+    const nome = document.createElement('span');
+    nome.className = 'font-medium';
+    nome.textContent = cliente.nome;
+    grupo.append(avatar, nome);
+    nomeCelula.appendChild(grupo);
+
+    linha.appendChild(nomeCelula);
+    linha.appendChild(celulaTexto(formatarTelefoneTabela(cliente.telefone)));
+    linha.appendChild(celulaTexto(formatarCpfTabela(cliente.cpf)));
+    linha.appendChild(celulaTexto(String(cliente.totalPets)));
+    linha.appendChild(celulaTexto(cliente.planos));
+
+    const statusCelula = document.createElement('td');
+    const status = document.createElement('span');
+    status.className = `selo ${STATUS_BADGE_MAP[cliente.status] || 'selo-cinza'}`;
+    const ponto = document.createElement('span');
+    ponto.className = 'selo-ponto';
+    status.append(ponto, document.createTextNode(cliente.status));
+    statusCelula.appendChild(status);
+    linha.appendChild(statusCelula);
+    corpo.appendChild(linha);
   });
 }
 
-/** Desenha o grafico de colunas de novos clientes por mes */
-function renderNewClientsChart() {
-  const ctx = document.getElementById('newClientsChart');
-  new Chart(ctx, {
+function renderNewClientsChart(series) {
+  new Chart(document.getElementById('newClientsChart'), {
     type: 'bar',
     data: {
-      labels: MOCK_NEW_CLIENTS_SERIES.labels,
+      labels: series.labels,
       datasets: [{
         label: 'Novos clientes',
-        data: MOCK_NEW_CLIENTS_SERIES.values,
+        data: series.novosClientes,
         backgroundColor: '#f1c744',
         borderRadius: 6,
         maxBarThickness: 34,
@@ -54,43 +96,45 @@ function renderNewClientsChart() {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { color: '#94a3b8', font: { size: 11 } } },
-        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+        y: { beginAtZero: true, ticks: { precision: 0, color: '#94a3b8' }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
       },
     },
   });
 }
 
-/** Desenha o grafico de rosca de planos por status */
-function renderPlanStatusChart() {
-  const ctx = document.getElementById('planStatusChart');
-  new Chart(ctx, {
+function renderPlanStatusChart(status) {
+  new Chart(document.getElementById('planStatusChart'), {
     type: 'doughnut',
     data: {
-      labels: MOCK_PLAN_STATUS_SERIES.labels,
-      datasets: [{
-        data: MOCK_PLAN_STATUS_SERIES.values,
-        backgroundColor: MOCK_PLAN_STATUS_SERIES.colors,
-        borderWidth: 0,
-        hoverOffset: 4,
-      }],
+      labels: status.labels,
+      datasets: [{ data: status.valores, backgroundColor: status.cores, borderWidth: 0 }],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       cutout: '68%',
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 12 }, color: '#475569' },
-        },
+        legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 16 } },
       },
     },
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  preencherTabelaClientes();
-  renderNewClientsChart();
-  renderPlanStatusChart();
-});
+async function carregarClientes() {
+  try {
+    const resposta = await fetch('api/clientes.php', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+    const resultado = await resposta.json();
+    if (tratarAcesso(resposta, resultado)) return;
+    if (!resposta.ok) throw new Error(resultado.mensagem);
+    preencherTabelaClientes(resultado.clientes);
+    renderNewClientsChart(resultado.series);
+    renderPlanStatusChart(resultado.series.statusPlanos);
+  } catch (erro) {
+    const corpo = document.getElementById('clients-body');
+    corpo.innerHTML = `<tr><td colspan="6" class="text-center text-red-700 py-8"></td></tr>`;
+    corpo.querySelector('td').textContent = erro.message || 'Não foi possível carregar os clientes.';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', carregarClientes);

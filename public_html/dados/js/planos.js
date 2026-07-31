@@ -1,86 +1,107 @@
-/**
- * Logica da pagina Planos.
- * Toda a estrutura visual (tabela, cartao do grafico) ja existe pronta
- * no planos.html. Aqui a gente so:
- *  - preenche os elementos existentes com os dados de js/data.js;
- *  - desenha o grafico (Chart.js) dentro do <canvas> ja presente.
- * Nenhuma funcao deste arquivo cria HTML novo.
- */
+function preencherAssinaturas(assinaturas) {
+  const corpo = document.getElementById('recent-plans-body');
+  corpo.innerHTML = '';
 
-/** Desenha o grafico de colunas com o total de planos contratados nos ultimos 6 meses */
-function renderPlansPeriodChart() {
-  const ctx = document.getElementById('plansPeriodChart');
-  const s = MOCK_PLANS_GROWTH_SERIES;
+  if (assinaturas.length === 0) {
+    const linha = document.createElement('tr');
+    const celula = document.createElement('td');
+    celula.colSpan = 6;
+    celula.className = 'text-center text-slate-500 py-8';
+    celula.textContent = 'Nenhuma assinatura cadastrada.';
+    linha.appendChild(celula);
+    corpo.appendChild(linha);
+    return;
+  }
 
-  new Chart(ctx, {
+  assinaturas.forEach((assinatura) => {
+    const linha = document.createElement('tr');
+    const clienteCelula = document.createElement('td');
+    const grupo = document.createElement('div');
+    grupo.className = 'flex items-center gap-3';
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar-iniciais';
+    avatar.style.cssText = `width:32px;height:32px;font-size:12.16px;background:${corAvatar(assinatura.cliente)};`;
+    avatar.textContent = getInitials(assinatura.cliente);
+    const nome = document.createElement('span');
+    nome.className = 'font-medium';
+    nome.textContent = assinatura.cliente;
+    grupo.append(avatar, nome);
+    clienteCelula.appendChild(grupo);
+    linha.appendChild(clienteCelula);
+
+    [
+      assinatura.pet,
+      assinatura.plano,
+      formatCurrency(Number(assinatura.valor)),
+      assinatura.dataVencimento ? formatDate(assinatura.dataVencimento) : '-',
+    ].forEach((texto) => {
+      const celula = document.createElement('td');
+      celula.className = 'text-slate-600';
+      celula.textContent = texto;
+      linha.appendChild(celula);
+    });
+
+    const statusCelula = document.createElement('td');
+    const status = document.createElement('span');
+    status.className = `selo ${STATUS_BADGE_MAP[assinatura.status] || 'selo-cinza'}`;
+    const ponto = document.createElement('span');
+    ponto.className = 'selo-ponto';
+    status.append(ponto, document.createTextNode(assinatura.status));
+    statusCelula.appendChild(status);
+    linha.appendChild(statusCelula);
+    corpo.appendChild(linha);
+  });
+}
+
+function renderPlansPeriodChart(serie) {
+  new Chart(document.getElementById('plansPeriodChart'), {
     type: 'bar',
     data: {
-      labels: s.labels,
-      datasets: [
-        {
-          data: s.values,
-          backgroundColor: '#2f5fa8',
-          borderRadius: 4,
-          maxBarThickness: 44,
-          categoryPercentage: 0.6,
-          barPercentage: 0.9,
-        },
-      ],
+      labels: serie.labels,
+      datasets: [{
+        data: serie.valores,
+        backgroundColor: '#2f5fa8',
+        borderRadius: 4,
+        maxBarThickness: 44,
+      }],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: {
-          displayColors: false,
-          backgroundColor: '#f1f5f9',
-          titleColor: '#0f172a',
-          bodyColor: '#0f172a',
-          padding: 10,
-          titleFont: { size: 12 },
-          bodyFont: { size: 13, weight: '600' },
-          callbacks: {
-            label: (item) => `${item.parsed.y} planos contratados`,
-          },
-        },
+        tooltip: { callbacks: { label: (item) => `${item.parsed.y} planos contratados` } },
       },
       scales: {
-        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { color: '#94a3b8', font: { size: 11 } } },
-        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+        y: { beginAtZero: true, ticks: { precision: 0, color: '#94a3b8' }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
       },
     },
   });
 }
 
-/**
- * Preenche as linhas (ja existentes no HTML) da tabela de planos recentes.
- * So define texto/estilo dos elementos de cada linha - nao cria linhas novas.
- */
-function preencherTabelaPlanosRecentes() {
-  const linhas = document.querySelectorAll('#recent-plans-body tr');
-  const planos = MOCK_PLANS.slice(0, linhas.length);
-
-  linhas.forEach((linha, i) => {
-    const plano = planos[i];
-
-    const avatar = linha.querySelector('.linha-avatar');
-    avatar.textContent = getInitials(plano.clientName);
-    avatar.style.background = corAvatar(plano.clientName);
-
-    linha.querySelector('.linha-cliente').textContent = plano.clientName;
-    linha.querySelector('.linha-pet').textContent = plano.petName;
-    linha.querySelector('.linha-plano').textContent = plano.planName;
-    linha.querySelector('.linha-valor').textContent = formatCurrency(plano.value);
-    linha.querySelector('.linha-vencimento').textContent = formatDate(plano.dueDate);
-
-    const selo = linha.querySelector('.linha-status');
-    selo.classList.add(STATUS_BADGE_MAP[plano.status] || 'selo-cinza');
-    linha.querySelector('.linha-status-texto').textContent = plano.status;
-  });
+async function carregarPlanos() {
+  try {
+    const resposta = await fetch('api/planos.php', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+    const resultado = await resposta.json();
+    if (resposta.status === 401) {
+      sessionStorage.removeItem('tpp-auth');
+      window.location.replace('login.html');
+      return;
+    }
+    if (resposta.status === 403 && resultado.trocarSenha) {
+      sessionStorage.removeItem('tpp-auth');
+      window.location.replace('trocar-senha.html');
+      return;
+    }
+    if (!resposta.ok) throw new Error(resultado.mensagem);
+    preencherAssinaturas(resultado.assinaturas);
+    renderPlansPeriodChart(resultado.serie);
+  } catch (erro) {
+    const corpo = document.getElementById('recent-plans-body');
+    corpo.innerHTML = '<tr><td colspan="6" class="text-center text-red-700 py-8"></td></tr>';
+    corpo.querySelector('td').textContent = erro.message || 'Não foi possível carregar os planos.';
+  }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderPlansPeriodChart();
-  preencherTabelaPlanosRecentes();
-});
+document.addEventListener('DOMContentLoaded', carregarPlanos);

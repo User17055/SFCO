@@ -1,8 +1,7 @@
 /**
- * Autenticacao ficticia (somente no navegador, via sessionStorage).
- * Nao ha backend: o guard de acesso de cada pagina (script inline no <head>)
- * ja redireciona para login.html quando o flag abaixo nao esta presente.
- * Este arquivo so cuida do botao de sair, presente na barra lateral.
+ * Controle de navegacao no cliente. A autenticacao real e a autorizacao dos
+ * endpoints sao feitas pela sessao PHP; este flag evita mostrar as paginas
+ * durante o redirecionamento e o logout tambem encerra a sessao no servidor.
  */
 
 const CHAVE_AUTH = 'tpp-auth';
