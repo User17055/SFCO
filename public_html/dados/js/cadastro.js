@@ -298,6 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const conteudoOriginal = botaoEnviar.innerHTML;
     botaoEnviar.disabled = true;
     botaoEnviar.textContent = 'Cadastrando...';
+    mostrarCarregamento('Salvando cadastro...');
 
     try {
       const resposta = await fetch('api/cadastrar.php', {
@@ -335,6 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
       mensagemErro.hidden = false;
       mensagemErro.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } finally {
+      ocultarCarregamento();
       botaoEnviar.disabled = false;
       botaoEnviar.innerHTML = conteudoOriginal;
       if (window.lucide) lucide.createIcons();

@@ -15,10 +15,9 @@ function garantirTelaCarregamento() {
   tela.setAttribute('aria-live', 'polite');
   tela.innerHTML = `
     <div class="tela-carregamento-conteudo">
-      <div class="tela-carregamento-marca"><span>Tudo</span>Pra<span>Pet</span></div>
       <div class="tela-carregamento-spinner" aria-hidden="true"></div>
-      <strong id="tela-carregamento-titulo">Carregando dados...</strong>
-      <span id="tela-carregamento-detalhe">Aguarde um instante.</span>
+      <span id="tela-carregamento-titulo" class="sr-only">Carregando dados...</span>
+      <span id="tela-carregamento-detalhe" class="sr-only">Aguarde um instante.</span>
     </div>`;
   document.body.appendChild(tela);
   return tela;
@@ -37,6 +36,14 @@ window.ocultarCarregamento = function () {
   const tela = document.getElementById('tela-carregamento');
   if (tela) tela.classList.add('tela-carregamento-oculta');
   document.body.removeAttribute('aria-busy');
+};
+
+window.estabilizarGrafico = function (grafico) {
+  if (!grafico) return;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    grafico.resize();
+    grafico.update('none');
+  }));
 };
 
 document.addEventListener('DOMContentLoaded', () => {

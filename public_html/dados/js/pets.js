@@ -70,6 +70,7 @@ function preencherPets(pets) {
 }
 
 async function carregarPets() {
+  mostrarCarregamento('Carregando pets...');
   try {
     const resposta = await fetch('api/pets.php', { headers: { Accept: 'application/json' }, cache: 'no-store' });
     const resultado = await resposta.json();
@@ -89,6 +90,8 @@ async function carregarPets() {
     const corpo = document.getElementById('pets-body');
     corpo.innerHTML = '<tr><td colspan="6" class="text-center text-red-700 py-8"></td></tr>';
     corpo.querySelector('td').textContent = erro.message || 'Não foi possível carregar os pets.';
+  } finally {
+    ocultarCarregamento();
   }
 }
 

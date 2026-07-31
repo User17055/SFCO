@@ -79,7 +79,7 @@ function preencherTabelaClientes(clientes) {
 }
 
 function renderNewClientsChart(series) {
-  new Chart(document.getElementById('newClientsChart'), {
+  const grafico = new Chart(document.getElementById('newClientsChart'), {
     type: 'bar',
     data: {
       labels: series.labels,
@@ -92,6 +92,7 @@ function renderNewClientsChart(series) {
       }],
     },
     options: {
+      animation: false,
       responsive: true,
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
@@ -101,16 +102,18 @@ function renderNewClientsChart(series) {
       },
     },
   });
+  estabilizarGrafico(grafico);
 }
 
 function renderPlanStatusChart(status) {
-  new Chart(document.getElementById('planStatusChart'), {
+  const grafico = new Chart(document.getElementById('planStatusChart'), {
     type: 'doughnut',
     data: {
       labels: status.labels,
       datasets: [{ data: status.valores, backgroundColor: status.cores, borderWidth: 0 }],
     },
     options: {
+      animation: false,
       responsive: true,
       maintainAspectRatio: false,
       cutout: '68%',
@@ -119,6 +122,7 @@ function renderPlanStatusChart(status) {
       },
     },
   });
+  estabilizarGrafico(grafico);
 }
 
 async function carregarClientes() {

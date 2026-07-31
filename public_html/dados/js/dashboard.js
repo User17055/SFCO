@@ -21,7 +21,7 @@ function preencherResumo(resultado) {
 }
 
 function renderRevenueChart(historico) {
-  new Chart(document.getElementById('revenueChart'), {
+  const grafico = new Chart(document.getElementById('revenueChart'), {
     type: 'line',
     data: {
       labels: historico.map((item) => rotuloCompetencia(item.competencia)),
@@ -38,6 +38,7 @@ function renderRevenueChart(historico) {
       }],
     },
     options: {
+      animation: false,
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
@@ -50,24 +51,26 @@ function renderRevenueChart(historico) {
       },
     },
   });
+  estabilizarGrafico(grafico);
 }
 
 function renderQuantityChart(historico) {
-  new Chart(document.getElementById('newClientsChart'), {
+  const mesesRecentes = historico.slice(-6);
+  const grafico = new Chart(document.getElementById('newClientsChart'), {
     type: 'bar',
     data: {
-      labels: historico.map((item) => rotuloCompetencia(item.competencia)),
+      labels: mesesRecentes.map((item) => rotuloCompetencia(item.competencia)),
       datasets: [
         {
-          label: 'Planos no mes',
-          data: historico.map((item) => item.quantidade),
+          label: 'Planos novos',
+          data: mesesRecentes.map((item) => item.novos),
           backgroundColor: '#f1c744',
           borderRadius: 6,
           maxBarThickness: 34,
         },
         {
           label: 'Cancelados',
-          data: historico.map((item) => item.cancelados),
+          data: mesesRecentes.map((item) => item.cancelados),
           backgroundColor: '#dc2626',
           borderRadius: 6,
           maxBarThickness: 34,
@@ -75,6 +78,7 @@ function renderQuantityChart(historico) {
       ],
     },
     options: {
+      animation: false,
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
@@ -89,10 +93,11 @@ function renderQuantityChart(historico) {
       },
     },
   });
+  estabilizarGrafico(grafico);
 }
 
 function renderStatusChart(kpis) {
-  new Chart(document.getElementById('planStatusChart'), {
+  const grafico = new Chart(document.getElementById('planStatusChart'), {
     type: 'doughnut',
     data: {
       labels: ['Ativos', 'Cancelados'],
@@ -104,6 +109,7 @@ function renderStatusChart(kpis) {
       }],
     },
     options: {
+      animation: false,
       responsive: true,
       maintainAspectRatio: false,
       cutout: '68%',
@@ -115,10 +121,12 @@ function renderStatusChart(kpis) {
       },
     },
   });
+  estabilizarGrafico(grafico);
 }
 
 async function carregarDashboard() {
   const mensagemErro = document.getElementById('dashboard-erro');
+  mostrarCarregamento('Carregando dashboard...');
 
   try {
     const resposta = await fetch('api/dashboard.php', {
@@ -154,6 +162,8 @@ async function carregarDashboard() {
     const textoErro = mensagemErro?.querySelector('span');
     if (textoErro) textoErro.textContent = erro.message;
     if (mensagemErro) mensagemErro.hidden = false;
+  } finally {
+    ocultarCarregamento();
   }
 }
 

@@ -103,17 +103,23 @@ function criarTutor(nomeTutor, itens) {
   resumo.appendChild(criarElemento('span', 'text-xs text-slate-500 shrink-0', `${nomesPets.size} pet(s) · ${itens.length} plano(s)`));
   tutor.appendChild(resumo);
 
-  const porPet = new Map();
-  itens.forEach((item) => {
-    const pet = item.pet || 'Pet nao informado';
-    if (!porPet.has(pet)) porPet.set(pet, []);
-    porPet.get(pet).push(item);
-  });
   const pets = criarElemento('div', 'grid gap-2 px-4 pb-4');
-  [...porPet.entries()]
-    .sort(([a], [b]) => a.localeCompare(b, 'pt-BR'))
-    .forEach(([pet, planos]) => pets.appendChild(criarPet(pet, planos)));
   tutor.appendChild(pets);
+
+  let detalhesMontados = false;
+  tutor.addEventListener('toggle', () => {
+    if (!tutor.open || detalhesMontados) return;
+    detalhesMontados = true;
+    const porPet = new Map();
+    itens.forEach((item) => {
+      const pet = item.pet || 'Pet nao informado';
+      if (!porPet.has(pet)) porPet.set(pet, []);
+      porPet.get(pet).push(item);
+    });
+    [...porPet.entries()]
+      .sort(([a], [b]) => a.localeCompare(b, 'pt-BR'))
+      .forEach(([pet, planos]) => pets.appendChild(criarPet(pet, planos)));
+  });
   return tutor;
 }
 
@@ -149,7 +155,7 @@ function renderDiretorio() {
 }
 
 function renderPlansPeriodChart(serie) {
-  new Chart(document.getElementById('plansPeriodChart'), {
+  const grafico = new Chart(document.getElementById('plansPeriodChart'), {
     type: 'bar',
     data: {
       labels: serie.labels,
@@ -171,6 +177,7 @@ function renderPlansPeriodChart(serie) {
       ],
     },
     options: {
+      animation: false,
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
@@ -183,6 +190,7 @@ function renderPlansPeriodChart(serie) {
       },
     },
   });
+  estabilizarGrafico(grafico);
 }
 
 function abrirRelatorioPlano(relatorio, botaoSelecionado) {
@@ -225,6 +233,7 @@ function abrirRelatorioPlano(relatorio, botaoSelecionado) {
       ],
     },
     options: {
+      animation: false,
       responsive: true,
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
@@ -238,6 +247,7 @@ function abrirRelatorioPlano(relatorio, botaoSelecionado) {
       },
     },
   });
+  estabilizarGrafico(graficoRelatorioPlano);
 
   detalhe.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -292,10 +302,16 @@ async function carregarPlanos() {
       cancelamentosImportados: Array.isArray(resultado.cancelamentosImportados) ? resultado.cancelamentosImportados : [],
       relatoriosPlanos: Array.isArray(resultado.relatoriosPlanos) ? resultado.relatoriosPlanos : [],
     };
-    if (!resultado.crescimento) throw new Error('O historico mensal dos planos nao foi retornado.');
-    renderPlansPeriodChart(resultado.crescimento);
+    /* As listas nao dependem do Chart.js: os dados sempre aparecem. */
     renderRelatoriosPlanos();
     renderDiretorio();
+    if (resultado.crescimento && typeof Chart !== 'undefined') {
+      try {
+        renderPlansPeriodChart(resultado.crescimento);
+      } catch (erroGrafico) {
+        console.error('Nao foi possivel desenhar o grafico de planos.', erroGrafico);
+      }
+    }
   } catch (falha) {
     const texto = erro?.querySelector('span');
     if (texto) texto.textContent = falha.message || 'Nao foi possivel carregar os planos.';
