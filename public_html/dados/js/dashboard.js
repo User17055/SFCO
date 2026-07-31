@@ -14,8 +14,8 @@ function preencherResumo(resultado) {
   definirTexto('kpi-total-clientes', resultado.kpis.totalClientes);
   definirTexto('kpi-total-pets', resultado.kpis.totalPets);
   definirTexto('kpi-planos-ativos', resultado.kpis.planosAtivos);
-  definirTexto('kpi-planos-cancelados', resultado.kpis.planosCancelados);
-  definirTexto('kpi-tipos-planos', resultado.kpis.tiposPlanos);
+  definirTexto('kpi-planos-novos', resultado.kpis.planosNovosMes);
+  definirTexto('kpi-cancelados-mes', resultado.kpis.canceladosMes);
   definirTexto('finance-projecao', formatCurrency(Number(resultado.projecao.mensal)));
   definirTexto('finance-cancelados', resultado.kpis.planosCancelados);
 }
@@ -57,18 +57,32 @@ function renderQuantityChart(historico) {
     type: 'bar',
     data: {
       labels: historico.map((item) => rotuloCompetencia(item.competencia)),
-      datasets: [{
-        label: 'Planos',
-        data: historico.map((item) => item.quantidade),
-        backgroundColor: '#f1c744',
-        borderRadius: 6,
-        maxBarThickness: 34,
-      }],
+      datasets: [
+        {
+          label: 'Planos no mes',
+          data: historico.map((item) => item.quantidade),
+          backgroundColor: '#f1c744',
+          borderRadius: 6,
+          maxBarThickness: 34,
+        },
+        {
+          label: 'Cancelados',
+          data: historico.map((item) => item.cancelados),
+          backgroundColor: '#dc2626',
+          borderRadius: 6,
+          maxBarThickness: 34,
+        },
+      ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: {
+          display: true,
+          labels: { usePointStyle: true, pointStyle: 'circle' },
+        },
+      },
       scales: {
         y: { beginAtZero: true, ticks: { precision: 0 } },
         x: { grid: { display: false } },
@@ -144,3 +158,17 @@ async function carregarDashboard() {
 }
 
 document.addEventListener('DOMContentLoaded', carregarDashboard);
+
+document.addEventListener('DOMContentLoaded', () => {
+  const navegar = (filtro) => { window.location.href = `planos.html?filtro=${filtro}`; };
+  const configurarCard = (id, filtro) => {
+    const card = document.getElementById(id);
+    if (!card) return;
+    card.addEventListener('click', () => navegar(filtro));
+    card.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Enter' || evento.key === ' ') navegar(filtro);
+    });
+  };
+  configurarCard('card-planos-novos', 'novos');
+  configurarCard('card-planos-cancelados', 'cancelados');
+});

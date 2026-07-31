@@ -164,23 +164,23 @@
           </div>
         </div>
 
-        <div class="cartao cartao-hover animar-entrada atraso-4 p-5 flex items-start justify-between">
+        <div id="card-planos-novos" class="cartao cartao-hover animar-entrada atraso-4 p-5 flex items-start justify-between cursor-pointer" role="link" tabindex="0" title="Ver planos novos">
           <div>
-            <p class="text-sm text-slate-500 font-medium">Planos cancelados</p>
-            <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="kpi-planos-cancelados">0</p>
+            <p class="text-sm text-slate-500 font-medium">Planos novos no mes</p>
+            <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="kpi-planos-novos">0</p>
           </div>
           <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:#d977061a;">
-            <i data-lucide="x-circle" class="w-5 h-5" style="color:#d97706;"></i>
+            <i data-lucide="badge-plus" class="w-5 h-5" style="color:#d97706;"></i>
           </div>
         </div>
 
-        <div class="cartao cartao-hover animar-entrada atraso-5 p-5 flex items-start justify-between">
+        <div id="card-planos-cancelados" class="cartao cartao-hover animar-entrada atraso-5 p-5 flex items-start justify-between cursor-pointer" role="link" tabindex="0" title="Ver planos cancelados">
           <div>
-            <p class="text-sm text-slate-500 font-medium">Nomes de planos</p>
-            <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="kpi-tipos-planos">0</p>
+            <p class="text-sm text-slate-500 font-medium">Cancelados no mes</p>
+            <p class="text-2xl font-semibold text-slate-900 mt-1.5" id="kpi-cancelados-mes">0</p>
           </div>
           <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:#dc26261a;">
-            <i data-lucide="clipboard-list" class="w-5 h-5" style="color:#dc2626;"></i>
+            <i data-lucide="x-circle" class="w-5 h-5" style="color:#dc2626;"></i>
           </div>
         </div>
 
@@ -189,7 +189,7 @@
       <!-- ===================== Resumo dos planos ===================== -->
       <div class="flex items-center justify-between mb-3">
         <div>
-          <h2 class="text-base font-semibold text-slate-900">Resumo financeiro</h2>
+          <h2 class="text-base font-semibold text-slate-900">Resumo dos planos</h2>
           <p class="text-xs text-slate-500 mt-0.5">Projecao calculada pelos valores das assinaturas ativas</p>
         </div>
       </div>
@@ -284,4 +284,3 @@
 <script src="js/dashboard.js"></script>
 </body>
 </html>
-

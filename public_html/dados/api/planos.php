@@ -3,12 +3,15 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/config/banco.php';
 require_once dirname(__DIR__) . '/config/api.php';
+require_once dirname(__DIR__) . '/config/movimentos_planos.php';
 
 iniciarRespostaApi();
 exigirAcessoApi();
 
 try {
     $pdo = conectarBanco();
+    date_default_timezone_set('America/Sao_Paulo');
+    $movimentos = calcularMovimentosPlanos($pdo);
     $catalogoConsulta = $pdo->query(
         "SELECT pl.id, pl.nome, pl.valor, pl.ativo,
                 COUNT(CASE WHEN a.status = 'Ativo' THEN 1 END) AS quantidade_ativa,
@@ -38,24 +41,31 @@ try {
            JOIN planos pl ON pl.id = a.plano_id
           ORDER BY (a.status = 'Ativo') DESC, c.nome, p.nome, a.id"
     );
-    $assinaturas = array_map(static fn (array $linha): array => [
-        'id' => (int) $linha['id'],
-        'petId' => (int) $linha['pet_id'],
-        'clienteId' => (int) $linha['cliente_id'],
-        'cliente' => $linha['cliente'],
-        'pet' => $linha['pet'],
-        'planoId' => (int) $linha['plano_id'],
-        'plano' => $linha['plano'],
-        'valorMensal' => (float) $linha['valor_mensal'],
-        'dataInicio' => $linha['data_inicio'],
-        'dataReajuste' => $linha['data_reajuste'],
-        'adicional' => $linha['adicional'] ?? '',
-        'observacoes' => $linha['observacoes'] ?? '',
-        'status' => $linha['status'],
-        'canceladoEm' => $linha['cancelado_em'],
-        'motivoCancelamento' => $linha['motivo_cancelamento'] ?? '',
-        'origem' => $linha['origem'] ?? '',
-    ], $assinaturasConsulta->fetchAll());
+    $assinaturas = array_map(
+        static function (array $linha) use ($movimentos): array {
+            $chave = chaveMovimentoPlano($linha['cliente'], $linha['pet'], $linha['plano']);
+            return [
+                'id' => (int) $linha['id'],
+                'petId' => (int) $linha['pet_id'],
+                'clienteId' => (int) $linha['cliente_id'],
+                'cliente' => $linha['cliente'],
+                'pet' => $linha['pet'],
+                'planoId' => (int) $linha['plano_id'],
+                'plano' => $linha['plano'],
+                'valorMensal' => (float) $linha['valor_mensal'],
+                'dataInicio' => $linha['data_inicio'],
+                'dataReajuste' => $linha['data_reajuste'],
+                'adicional' => $linha['adicional'] ?? '',
+                'observacoes' => $linha['observacoes'] ?? '',
+                'status' => $linha['status'],
+                'canceladoEm' => $linha['cancelado_em'],
+                'motivoCancelamento' => $linha['motivo_cancelamento'] ?? '',
+                'origem' => $linha['origem'] ?? '',
+                'novo' => isset($movimentos['novosAtuais'][$chave]),
+            ];
+        },
+        $assinaturasConsulta->fetchAll()
+    );
 
     $cancelamentosConsulta = $pdo->query(
         "SELECT id, cliente_nome, plano_nome, competencia, motivo, valor, quantidade
@@ -71,11 +81,33 @@ try {
         'quantidade' => (int) $linha['quantidade'],
     ], $cancelamentosConsulta->fetchAll());
 
+    $meses = [1 => 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    $competencias = array_keys($movimentos['novosPorMes']);
+    $competencias = array_slice($competencias, -6);
+    $crescimento = [
+        'labels' => array_map(
+            static function (string $competencia) use ($meses): string {
+                [$ano, $mes] = array_map('intval', explode('-', $competencia));
+                return $meses[$mes] . '/' . $ano;
+            },
+            $competencias
+        ),
+        'novos' => array_map(
+            static fn (string $competencia): int => $movimentos['novosPorMes'][$competencia] ?? 0,
+            $competencias
+        ),
+        'cancelados' => array_map(
+            static fn (string $competencia): int => $movimentos['canceladosPorMes'][$competencia] ?? 0,
+            $competencias
+        ),
+    ];
+
     responderJson(200, [
         'sucesso' => true,
         'catalogo' => $catalogo,
         'assinaturas' => $assinaturas,
         'cancelamentosImportados' => $cancelamentos,
+        'crescimento' => $crescimento,
     ]);
 } catch (Throwable $erro) {
     error_log($erro->getMessage());

@@ -124,12 +124,12 @@
 
     <main class="flex-1 px-4 lg:px-8 py-6 max-w-[1400px] w-full mx-auto">
 
-      <!-- ===================== Planos por tipo ===================== -->
+      <!-- ===================== Crescimento de planos ===================== -->
       <div class="cartao animar-entrada atraso-1 p-5 mb-6">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h2 class="text-sm font-semibold text-slate-900">Crescimento de planos contratados</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Total de planos nos ultimos 6 meses</p>
+            <h2 class="text-sm font-semibold text-slate-900">Crescimento de planos novos</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Primeira aparicao de cada combinacao tutor, pet e plano</p>
           </div>
         </div>
         <div class="caixa-grafico" style="height:260px;">
@@ -137,112 +137,30 @@
         </div>
       </div>
 
-      <!-- ===================== Tabela de planos recentes ===================== -->
+      <!-- ===================== Todos os planos ===================== -->
       <div class="cartao animar-entrada atraso-2 overflow-hidden">
-        <div class="flex items-center justify-between px-5 pt-5 pb-1">
-          <div>
-            <h2 class="text-sm font-semibold text-slate-900">Planos recentes</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Ultimas atualizacoes de planos pet</p>
+        <div class="px-5 pt-5 pb-4 border-b border-slate-100">
+          <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">Todos os planos por tutor e pet</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Clique no tutor e depois no pet para ver o plano completo</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="filtro-plano px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600" data-filtro="todos">Todos</button>
+              <button type="button" class="filtro-plano px-3 py-2 rounded-lg text-xs font-semibold bg-amber-100 text-amber-800" data-filtro="novos">Novos</button>
+              <button type="button" class="filtro-plano px-3 py-2 rounded-lg text-xs font-semibold bg-red-100 text-red-700" data-filtro="cancelados">Cancelados</button>
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-3 mt-4">
+            <input id="busca-planos" type="search" class="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-blue-200" placeholder="Buscar tutor, pet ou nome do plano">
+            <span id="total-planos-listados" class="text-xs text-slate-500 self-center">Carregando...</span>
           </div>
         </div>
-        <div class="overflow-x-auto mt-3">
-          <table class="tabela-dados">
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Pet</th>
-                <th>Plano</th>
-                <th>Valor</th>
-                <th>Vencimento</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <!--
-              As 6 linhas abaixo ja existem prontas no HTML.
-              O planos.js so preenche o conteudo de cada uma (nao cria linhas novas).
-            -->
-            <tbody id="recent-plans-body">
-              <tr>
-                <td>
-                  <div class="flex items-center gap-3">
-                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
-                    <span class="font-medium linha-cliente"></span>
-                  </div>
-                </td>
-                <td class="text-slate-600 linha-pet"></td>
-                <td class="text-slate-600 linha-plano"></td>
-                <td class="text-slate-600 linha-valor"></td>
-                <td class="text-slate-600 linha-vencimento"></td>
-                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="flex items-center gap-3">
-                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
-                    <span class="font-medium linha-cliente"></span>
-                  </div>
-                </td>
-                <td class="text-slate-600 linha-pet"></td>
-                <td class="text-slate-600 linha-plano"></td>
-                <td class="text-slate-600 linha-valor"></td>
-                <td class="text-slate-600 linha-vencimento"></td>
-                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="flex items-center gap-3">
-                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
-                    <span class="font-medium linha-cliente"></span>
-                  </div>
-                </td>
-                <td class="text-slate-600 linha-pet"></td>
-                <td class="text-slate-600 linha-plano"></td>
-                <td class="text-slate-600 linha-valor"></td>
-                <td class="text-slate-600 linha-vencimento"></td>
-                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="flex items-center gap-3">
-                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
-                    <span class="font-medium linha-cliente"></span>
-                  </div>
-                </td>
-                <td class="text-slate-600 linha-pet"></td>
-                <td class="text-slate-600 linha-plano"></td>
-                <td class="text-slate-600 linha-valor"></td>
-                <td class="text-slate-600 linha-vencimento"></td>
-                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="flex items-center gap-3">
-                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
-                    <span class="font-medium linha-cliente"></span>
-                  </div>
-                </td>
-                <td class="text-slate-600 linha-pet"></td>
-                <td class="text-slate-600 linha-plano"></td>
-                <td class="text-slate-600 linha-valor"></td>
-                <td class="text-slate-600 linha-vencimento"></td>
-                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="flex items-center gap-3">
-                    <div class="avatar-iniciais linha-avatar" style="width:32px;height:32px;font-size:12.16px;"></div>
-                    <span class="font-medium linha-cliente"></span>
-                  </div>
-                </td>
-                <td class="text-slate-600 linha-pet"></td>
-                <td class="text-slate-600 linha-plano"></td>
-                <td class="text-slate-600 linha-valor"></td>
-                <td class="text-slate-600 linha-vencimento"></td>
-                <td><span class="selo linha-status"><span class="selo-ponto"></span><span class="linha-status-texto"></span></span></td>
-              </tr>
-            </tbody>
-          </table>
+        <div id="planos-erro" class="cadastro-erro m-5" hidden role="alert">
+          <i data-lucide="circle-alert" class="w-4 h-4"></i>
+          <span>Nao foi possivel carregar os planos.</span>
         </div>
+        <div id="diretorio-planos" class="p-5 space-y-3"></div>
       </div>
 
     </main>
@@ -255,3 +173,4 @@
 <script src="js/planos.js"></script>
 </body>
 </html>
+

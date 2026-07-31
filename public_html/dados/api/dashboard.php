@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/config/banco.php';
 require_once dirname(__DIR__) . '/config/api.php';
+require_once dirname(__DIR__) . '/config/movimentos_planos.php';
 
 iniciarRespostaApi();
 exigirAcessoApi();
@@ -25,6 +26,7 @@ try {
     $projecao = (float) $metricas['projecao'];
     $cancelados = (int) $metricas['planos_cancelados']
         + (int) $metricas['cancelamentos_importados'];
+    $movimentos = calcularMovimentosPlanos($pdo);
 
     $historico = $pdo->query(
         "SELECT DATE_FORMAT(competencia, '%Y-%m') AS competencia,
@@ -33,7 +35,7 @@ try {
           GROUP BY competencia ORDER BY competencia"
     )->fetchAll();
     $historico[] = [
-        'competencia' => '2026-07',
+        'competencia' => $movimentos['competenciaAtual'],
         'quantidade' => $ativos,
         'projecao' => $projecao,
     ];
@@ -59,17 +61,24 @@ try {
             'totalPets' => (int) $metricas['total_pets'],
             'planosAtivos' => $ativos,
             'planosCancelados' => $cancelados,
+            'planosNovosMes' => $movimentos['novosPorMes'][$movimentos['competenciaAtual']] ?? 0,
+            'canceladosMes' => $movimentos['canceladosPorMes'][$movimentos['competenciaAtual']] ?? 0,
             'tiposPlanos' => (int) $metricas['tipos_planos'],
         ],
         'projecao' => [
             'mensal' => $projecao,
             'ticketMedio' => $ativos > 0 ? round($projecao / $ativos, 2) : 0,
         ],
-        'historico' => array_map(static fn (array $linha): array => [
-            'competencia' => $linha['competencia'],
-            'quantidade' => (int) $linha['quantidade'],
-            'projecao' => (float) $linha['projecao'],
-        ], $historico),
+        'historico' => array_map(
+            static fn (array $linha): array => [
+                'competencia' => $linha['competencia'],
+                'quantidade' => (int) $linha['quantidade'],
+                'projecao' => (float) $linha['projecao'],
+                'novos' => $movimentos['novosPorMes'][$linha['competencia']] ?? 0,
+                'cancelados' => $movimentos['canceladosPorMes'][$linha['competencia']] ?? 0,
+            ],
+            $historico
+        ),
         'porPlano' => array_map(static fn (array $linha): array => [
             'nome' => $linha['nome'],
             'quantidade' => (int) $linha['quantidade'],
