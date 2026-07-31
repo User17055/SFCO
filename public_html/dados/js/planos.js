@@ -1,7 +1,5 @@
 let dadosPlanos = { assinaturas: [], cancelamentosImportados: [], crescimento: null, relatoriosPlanos: [] };
 let filtroAtual = new URLSearchParams(window.location.search).get('filtro') || 'todos';
-let graficoRelatorioPlano = null;
-let graficoValoresPlano = null;
 
 if (!['todos', 'novos', 'cancelados'].includes(filtroAtual)) filtroAtual = 'todos';
 
@@ -194,125 +192,9 @@ function renderPlansPeriodChart(serie) {
   estabilizarGrafico(grafico);
 }
 
-function abrirRelatorioPlano(relatorio, botaoSelecionado) {
-  document.querySelectorAll('[data-relatorio-plano]').forEach((botao) => {
-    botao.classList.toggle('ring-2', botao === botaoSelecionado);
-    botao.classList.toggle('ring-blue-400', botao === botaoSelecionado);
-  });
-
-  const detalhe = document.getElementById('detalhe-relatorio-plano');
-  detalhe.hidden = false;
-  document.getElementById('nome-relatorio-plano').textContent = relatorio.nome;
-  document.getElementById('valor-relatorio-plano').textContent = formatCurrency(Number(relatorio.valorPlano || 0));
-  document.getElementById('quantidade-relatorio-plano').textContent = String(relatorio.quantidadeAtual);
-  document.getElementById('projecao-relatorio-plano').textContent = formatCurrency(Number(relatorio.projecaoAtual));
-  document.getElementById('novos-relatorio-plano').textContent = String(relatorio.novosMesAtual || 0);
-  document.getElementById('cancelados-relatorio-plano').textContent = String(relatorio.totalCancelados);
-  document.getElementById('valor-cancelado-relatorio-plano').textContent = formatCurrency(Number(relatorio.valorTotalCancelado || 0));
-
-  if (graficoRelatorioPlano) graficoRelatorioPlano.destroy();
-  if (graficoValoresPlano) graficoValoresPlano.destroy();
-  if (typeof Chart === 'undefined') {
-    detalhe.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    return;
-  }
-  graficoRelatorioPlano = new Chart(document.getElementById('planReportChart'), {
-    data: {
-      labels: relatorio.labels,
-      datasets: [
-        {
-          type: 'line',
-          label: 'Quantidade do plano',
-          data: relatorio.quantidades,
-          borderColor: '#2f5fa8',
-          backgroundColor: 'rgba(47, 95, 168, 0.12)',
-          fill: true,
-          tension: 0.3,
-          pointRadius: 3,
-          borderWidth: 2,
-        },
-        {
-          type: 'bar',
-          label: 'Planos novos',
-          data: relatorio.novos,
-          backgroundColor: '#f1c744',
-          borderRadius: 4,
-          maxBarThickness: 22,
-        },
-        {
-          type: 'bar',
-          label: 'Cancelamentos',
-          data: relatorio.cancelados,
-          backgroundColor: '#dc2626',
-          borderRadius: 4,
-          maxBarThickness: 30,
-        },
-      ],
-    },
-    options: {
-      animation: false,
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { labels: { usePointStyle: true, pointStyle: 'circle' } },
-        tooltip: { callbacks: { label: (item) => `${item.dataset.label}: ${item.parsed.y}` } },
-      },
-      scales: {
-        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } },
-        x: { grid: { display: false } },
-      },
-    },
-  });
-  estabilizarGrafico(graficoRelatorioPlano);
-
-  graficoValoresPlano = new Chart(document.getElementById('planValueChart'), {
-    data: {
-      labels: relatorio.labels,
-      datasets: [
-        {
-          type: 'line',
-          label: 'Valor mensal dos planos',
-          data: relatorio.valoresMensais,
-          borderColor: '#16a34a',
-          backgroundColor: 'rgba(22, 163, 74, 0.12)',
-          fill: true,
-          tension: 0.3,
-          pointRadius: 3,
-          borderWidth: 2,
-        },
-        {
-          type: 'bar',
-          label: 'Valor cancelado',
-          data: relatorio.valoresCancelados,
-          backgroundColor: '#dc2626',
-          borderRadius: 4,
-          maxBarThickness: 24,
-        },
-      ],
-    },
-    options: {
-      animation: false,
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { labels: { usePointStyle: true, pointStyle: 'circle' } },
-        tooltip: { callbacks: { label: (item) => `${item.dataset.label}: ${formatCurrency(Number(item.raw || 0))}` } },
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { callback: (valor) => formatCurrency(Number(valor)) },
-          grid: { color: '#f1f5f9' },
-        },
-        x: { grid: { display: false } },
-      },
-    },
-  });
-  estabilizarGrafico(graficoValoresPlano);
-
-  detalhe.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+function abrirRelatorioPlano(relatorio) {
+  const destino = `relatorio-plano.html?plano=${encodeURIComponent(relatorio.nome)}`;
+  window.location.href = destino;
 }
 
 function renderRelatoriosPlanos() {
@@ -338,7 +220,7 @@ function renderRelatoriosPlanos() {
     resumo.appendChild(criarElemento('span', 'px-2 py-1 rounded-full bg-green-50 text-green-700', formatCurrency(Number(relatorio.valorPlano || 0))));
     resumo.appendChild(criarElemento('span', 'px-2 py-1 rounded-full bg-red-50 text-red-700', `${relatorio.totalCancelados} cancelado(s)`));
     botao.appendChild(resumo);
-    botao.addEventListener('click', () => abrirRelatorioPlano(relatorio, botao));
+    botao.addEventListener('click', () => abrirRelatorioPlano(relatorio));
     lista.appendChild(botao);
   });
 }

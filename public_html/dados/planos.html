@@ -148,57 +148,6 @@
         </div>
         <div id="lista-relatorios-planos" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3"></div>
 
-        <div id="detalhe-relatorio-plano" class="mt-5 pt-5 border-t border-slate-100" hidden>
-          <div class="mb-4">
-            <div>
-              <p class="text-xs text-slate-500">Plano selecionado</p>
-              <h3 id="nome-relatorio-plano" class="text-base font-semibold text-slate-900"></h3>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-5">
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <p class="text-[11px] text-slate-500">Valor do plano</p>
-              <strong id="valor-relatorio-plano" class="block mt-1 text-sm text-slate-900">-</strong>
-            </div>
-            <div class="rounded-xl border border-blue-100 bg-blue-50 p-3">
-              <p class="text-[11px] text-blue-600">Planos ativos</p>
-              <strong id="quantidade-relatorio-plano" class="block mt-1 text-sm text-blue-800">-</strong>
-            </div>
-            <div class="rounded-xl border border-green-100 bg-green-50 p-3">
-              <p class="text-[11px] text-green-600">Projecao mensal</p>
-              <strong id="projecao-relatorio-plano" class="block mt-1 text-sm text-green-800">-</strong>
-            </div>
-            <div class="rounded-xl border border-amber-100 bg-amber-50 p-3">
-              <p class="text-[11px] text-amber-700">Novos no mes</p>
-              <strong id="novos-relatorio-plano" class="block mt-1 text-sm text-amber-900">-</strong>
-            </div>
-            <div class="rounded-xl border border-red-100 bg-red-50 p-3">
-              <p class="text-[11px] text-red-600">Cancelamentos</p>
-              <strong id="cancelados-relatorio-plano" class="block mt-1 text-sm text-red-800">-</strong>
-            </div>
-            <div class="rounded-xl border border-red-100 bg-red-50 p-3">
-              <p class="text-[11px] text-red-600">Valor cancelado</p>
-              <strong id="valor-cancelado-relatorio-plano" class="block mt-1 text-sm text-red-800">-</strong>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            <div class="rounded-xl border border-slate-100 p-4">
-              <h4 class="text-xs font-semibold text-slate-700 mb-3">Quantidade, novos e cancelamentos por mes</h4>
-              <div class="caixa-grafico" style="height:290px;">
-                <canvas id="planReportChart"></canvas>
-              </div>
-            </div>
-            <div class="rounded-xl border border-slate-100 p-4">
-              <h4 class="text-xs font-semibold text-slate-700 mb-3">Valores mensais do plano</h4>
-              <div class="caixa-grafico" style="height:290px;">
-                <canvas id="planValueChart"></canvas>
-              </div>
-            </div>
-          </div>
-          <p class="text-[11px] text-slate-400 mt-3">Cancelamentos sem nome de plano na planilha nao sao atribuidos a um plano especifico.</p>
-        </div>
       </div>
 
       <!-- ===================== Todos os planos ===================== -->
@@ -234,6 +183,6 @@
 <script src="js/auth.js"></script>
 <script src="js/components.js"></script>
 <script src="js/layout.js?v=20260731-2"></script>
-<script src="js/planos.js?v=20260731-3"></script>
+<script src="js/planos.js?v=20260731-4"></script>
 </body>
 </html>

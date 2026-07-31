@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<script>
+  if (sessionStorage.getItem('tpp-auth') !== '1') window.location.replace('login.html');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatorio do plano · TudoPraPet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Poppins','sans-serif']}}}};</script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="css/style.css?v=20260731-2">
+</head>
+<body class="font-sans">
+<div class="estrutura-app">
+  <aside class="barra-lateral">
+    <div class="px-4 pt-6 pb-3">
+      <span class="font-extrabold text-2xl tracking-tight">
+        <span style="color:var(--color-accent);">Tudo</span><span class="text-white">Pra</span><span style="color:var(--color-accent);">Pet</span>
+      </span>
+    </div>
+    <div class="painel-menu">
+      <nav class="flex-1 px-4 pt-4 pb-2 overflow-y-auto">
+        <p class="text-[11px] font-semibold uppercase tracking-wider mb-1 text-slate-400">Menu</p>
+        <a href="index.html" class="link-menu"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+        <a href="clientes.html" class="link-menu"><i data-lucide="users"></i><span>Clientes</span></a>
+        <a href="pets.html" class="link-menu"><i data-lucide="paw-print"></i><span>Pets</span></a>
+        <a href="planos.html" class="link-menu ativo"><i data-lucide="clipboard-list"></i><span>Planos</span></a>
+        <a href="cadastro.html" class="link-menu"><i data-lucide="user-plus"></i><span>Cadastro</span></a>
+      </nav>
+    </div>
+    <div class="px-4 pt-3 pb-4" style="border-top:1px solid rgba(255,255,255,0.12);">
+      <div id="botao-sair" class="flex items-center gap-3 px-2 py-2 rounded-lg cursor-pointer hover:bg-white/10">
+        <div class="avatar-iniciais" data-usuario-iniciais style="width:34px;height:34px;font-size:12px;background:#0891b2;">...</div>
+        <div class="min-w-0"><p class="text-sm font-medium text-white truncate" data-usuario-nome>Carregando...</p><p class="text-xs truncate" data-usuario-email style="color:rgba(255,255,255,.65);"></p></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="area-principal" id="main-area">
+    <header class="barra-superior">
+      <div class="h-16 flex items-center justify-between gap-4 px-4 lg:px-8">
+        <button id="sidebar-toggle" class="botao-icone lg:hidden"><i data-lucide="menu" class="w-5 h-5"></i></button>
+        <div class="hidden sm:flex items-center gap-2">
+          <div class="avatar-iniciais" data-usuario-iniciais style="width:30px;height:30px;font-size:11px;background:#ebbd25;">...</div>
+          <span class="text-sm font-medium text-slate-700" data-usuario-nome>Carregando...</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-4 lg:px-8 py-6 max-w-[1500px] w-full mx-auto">
+      <a href="planos.html" class="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-900 mb-4">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>Voltar para planos
+      </a>
+
+      <div id="relatorio-plano-erro" class="cadastro-erro mb-5" hidden role="alert"><i data-lucide="circle-alert" class="w-4 h-4"></i><span></span></div>
+
+      <section id="conteudo-relatorio-plano" hidden>
+        <div class="mb-6">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Dashboard do plano</p>
+          <h1 id="titulo-plano" class="text-2xl font-bold text-slate-900 mt-1"></h1>
+          <p class="text-sm text-slate-500 mt-1">Metricas, crescimento e cancelamentos exclusivos deste plano</p>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+          <div class="cartao p-4"><p class="text-xs text-slate-500">Valor do plano</p><strong id="metrica-valor" class="block text-xl text-slate-900 mt-2">-</strong></div>
+          <div class="cartao p-4"><p class="text-xs text-blue-600">Planos ativos</p><strong id="metrica-ativos" class="block text-xl text-blue-800 mt-2">-</strong></div>
+          <div class="cartao p-4"><p class="text-xs text-green-600">Valor mensal</p><strong id="metrica-projecao" class="block text-xl text-green-800 mt-2">-</strong></div>
+          <div class="cartao p-4"><p class="text-xs text-amber-700">Novos no mes</p><strong id="metrica-novos" class="block text-xl text-amber-900 mt-2">-</strong></div>
+          <div class="cartao p-4"><p class="text-xs text-red-600">Cancelamentos</p><strong id="metrica-cancelados" class="block text-xl text-red-800 mt-2">-</strong></div>
+          <div class="cartao p-4"><p class="text-xs text-red-600">Valor cancelado</p><strong id="metrica-valor-cancelado" class="block text-xl text-red-800 mt-2">-</strong></div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-5">
+          <div class="cartao p-5"><h2 class="text-sm font-semibold text-slate-900 mb-1">Quantidade geral por mes</h2><p class="text-xs text-slate-500 mb-4">Total deste plano em cada competencia</p><div class="caixa-grafico" style="height:280px"><canvas id="grafico-quantidade-plano"></canvas></div></div>
+          <div class="cartao p-5"><h2 class="text-sm font-semibold text-slate-900 mb-1">Planos novos por mes</h2><p class="text-xs text-slate-500 mb-4">Novas contratacoes deste plano</p><div class="caixa-grafico" style="height:280px"><canvas id="grafico-novos-plano"></canvas></div></div>
+          <div class="cartao p-5"><h2 class="text-sm font-semibold text-slate-900 mb-1">Cancelamentos por mes</h2><p class="text-xs text-slate-500 mb-4">Cancelamentos identificados para este plano</p><div class="caixa-grafico" style="height:280px"><canvas id="grafico-cancelados-plano"></canvas></div></div>
+          <div class="cartao p-5"><h2 class="text-sm font-semibold text-slate-900 mb-1">Valores por mes</h2><p class="text-xs text-slate-500 mb-4">Valor mensal ativo e valor cancelado</p><div class="caixa-grafico" style="height:280px"><canvas id="grafico-valores-plano"></canvas></div></div>
+        </div>
+
+        <div class="cartao overflow-hidden">
+          <div class="px-5 py-4 border-b border-slate-100"><h2 class="text-sm font-semibold text-slate-900">Historico de cancelamentos do plano</h2><p class="text-xs text-slate-500 mt-1">Somente registros em que a planilha identifica o plano</p></div>
+          <div class="overflow-x-auto"><table class="tabela-dados"><thead><tr><th>Mes</th><th>Quantidade</th><th>Valor cancelado</th></tr></thead><tbody id="historico-cancelamentos-plano"></tbody></table></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<script src="js/auth.js"></script>
+<script src="js/components.js"></script>
+<script src="js/layout.js?v=20260731-2"></script>
+<script src="js/relatorio-plano.js?v=20260731-1"></script>
+</body>
+</html>

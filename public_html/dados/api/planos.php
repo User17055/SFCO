@@ -106,6 +106,11 @@ try {
         $nome = mb_strtoupper(trim($nome));
         return preg_replace('/\s+/u', ' ', $nome) ?? $nome;
     };
+    $aliasesCancelamentos = [
+        'VIP' => 'PLANO VIP',
+        '3 SUPER ECONOMICO FELINO' => 'PLANO ECONOMICO FELINO',
+        'SUPER ECONOMICO+2 BANHOS' => 'SUPER ECONOMICO + BANHOS',
+    ];
     $todasCompetencias = array_values(array_unique(array_merge(
         array_keys($movimentos['novosPorMes']),
         array_keys($movimentos['canceladosPorMes'])
@@ -205,6 +210,7 @@ try {
     );
     foreach ($cancelamentosPorPlano->fetchAll() as $linha) {
         $chave = $normalizarNomePlano($linha['plano_nome']);
+        $chave = $aliasesCancelamentos[$chave] ?? $chave;
         if (!isset($relatorios[$chave])) {
             $relatorios[$chave] = [
                 'nome' => $linha['plano_nome'],
