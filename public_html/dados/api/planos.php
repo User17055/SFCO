@@ -102,12 +102,115 @@ try {
         ),
     ];
 
+    $normalizarNomePlano = static function (string $nome): string {
+        $nome = mb_strtoupper(trim($nome));
+        return preg_replace('/\s+/u', ' ', $nome) ?? $nome;
+    };
+    $todasCompetencias = array_values(array_unique(array_merge(
+        array_keys($movimentos['novosPorMes']),
+        array_keys($movimentos['canceladosPorMes'])
+    )));
+    sort($todasCompetencias);
+    $rotulosCompetencias = array_map(
+        static function (string $competencia) use ($meses): string {
+            [$ano, $mes] = array_map('intval', explode('-', $competencia));
+            return $meses[$mes] . '/' . $ano;
+        },
+        $todasCompetencias
+    );
+
+    $relatorios = [];
+    foreach ($catalogo as $plano) {
+        if (!$plano['ativo'] && $plano['quantidadeAtiva'] === 0) {
+            continue;
+        }
+        $chave = $normalizarNomePlano($plano['nome']);
+        $relatorios[$chave] = [
+            'nome' => $plano['nome'],
+            'quantidadeAtual' => $plano['quantidadeAtiva'],
+            'projecaoAtual' => $plano['projecao'],
+            'quantidades' => array_fill_keys($todasCompetencias, 0),
+            'cancelados' => array_fill_keys($todasCompetencias, 0),
+        ];
+        $relatorios[$chave]['quantidades'][$movimentos['competenciaAtual']] = $plano['quantidadeAtiva'];
+    }
+
+    $historicoPorPlano = $pdo->query(
+        "SELECT DATE_FORMAT(competencia, '%Y-%m') AS competencia,
+                plano_nome, COUNT(*) AS quantidade
+           FROM historico_planos
+          GROUP BY competencia, plano_nome
+          ORDER BY competencia, plano_nome"
+    );
+    foreach ($historicoPorPlano->fetchAll() as $linha) {
+        $chave = $normalizarNomePlano($linha['plano_nome']);
+        if (!isset($relatorios[$chave])) {
+            $relatorios[$chave] = [
+                'nome' => $linha['plano_nome'],
+                'quantidadeAtual' => 0,
+                'projecaoAtual' => 0.0,
+                'quantidades' => array_fill_keys($todasCompetencias, 0),
+                'cancelados' => array_fill_keys($todasCompetencias, 0),
+            ];
+        }
+        $relatorios[$chave]['quantidades'][$linha['competencia']] = (int) $linha['quantidade'];
+    }
+
+    $cancelamentosPorPlano = $pdo->query(
+        "SELECT DATE_FORMAT(competencia, '%Y-%m') AS competencia,
+                plano_nome, SUM(quantidade) AS quantidade
+           FROM cancelamentos
+          WHERE plano_nome IS NOT NULL AND TRIM(plano_nome) <> ''
+          GROUP BY competencia, plano_nome
+          ORDER BY competencia, plano_nome"
+    );
+    foreach ($cancelamentosPorPlano->fetchAll() as $linha) {
+        $chave = $normalizarNomePlano($linha['plano_nome']);
+        if (!isset($relatorios[$chave])) {
+            $relatorios[$chave] = [
+                'nome' => $linha['plano_nome'],
+                'quantidadeAtual' => 0,
+                'projecaoAtual' => 0.0,
+                'quantidades' => array_fill_keys($todasCompetencias, 0),
+                'cancelados' => array_fill_keys($todasCompetencias, 0),
+            ];
+        }
+        $relatorios[$chave]['cancelados'][$linha['competencia']] = (int) $linha['quantidade'];
+    }
+
+    $relatoriosPlanos = array_map(
+        static function (array $relatorio) use ($todasCompetencias, $rotulosCompetencias): array {
+            return [
+                'nome' => $relatorio['nome'],
+                'quantidadeAtual' => (int) $relatorio['quantidadeAtual'],
+                'projecaoAtual' => (float) $relatorio['projecaoAtual'],
+                'totalCancelados' => array_sum($relatorio['cancelados']),
+                'labels' => $rotulosCompetencias,
+                'quantidades' => array_map(
+                    static fn (string $competencia): int => $relatorio['quantidades'][$competencia] ?? 0,
+                    $todasCompetencias
+                ),
+                'cancelados' => array_map(
+                    static fn (string $competencia): int => $relatorio['cancelados'][$competencia] ?? 0,
+                    $todasCompetencias
+                ),
+            ];
+        },
+        array_values($relatorios)
+    );
+    usort(
+        $relatoriosPlanos,
+        static fn (array $a, array $b): int => $b['quantidadeAtual'] <=> $a['quantidadeAtual']
+            ?: strcasecmp($a['nome'], $b['nome'])
+    );
+
     responderJson(200, [
         'sucesso' => true,
         'catalogo' => $catalogo,
         'assinaturas' => $assinaturas,
         'cancelamentosImportados' => $cancelamentos,
         'crescimento' => $crescimento,
+        'relatoriosPlanos' => $relatoriosPlanos,
     ]);
 } catch (Throwable $erro) {
     error_log($erro->getMessage());

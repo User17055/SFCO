@@ -1,5 +1,6 @@
-let dadosPlanos = { assinaturas: [], cancelamentosImportados: [], crescimento: null };
+let dadosPlanos = { assinaturas: [], cancelamentosImportados: [], crescimento: null, relatoriosPlanos: [] };
 let filtroAtual = new URLSearchParams(window.location.search).get('filtro') || 'todos';
+let graficoRelatorioPlano = null;
 
 if (!['todos', 'novos', 'cancelados'].includes(filtroAtual)) filtroAtual = 'todos';
 
@@ -184,6 +185,90 @@ function renderPlansPeriodChart(serie) {
   });
 }
 
+function abrirRelatorioPlano(relatorio, botaoSelecionado) {
+  document.querySelectorAll('[data-relatorio-plano]').forEach((botao) => {
+    botao.classList.toggle('ring-2', botao === botaoSelecionado);
+    botao.classList.toggle('ring-blue-400', botao === botaoSelecionado);
+  });
+
+  const detalhe = document.getElementById('detalhe-relatorio-plano');
+  detalhe.hidden = false;
+  document.getElementById('nome-relatorio-plano').textContent = relatorio.nome;
+  document.getElementById('quantidade-relatorio-plano').textContent = `${relatorio.quantidadeAtual} plano(s) atual(is)`;
+  document.getElementById('projecao-relatorio-plano').textContent = `Projecao: ${formatCurrency(Number(relatorio.projecaoAtual))}`;
+  document.getElementById('cancelados-relatorio-plano').textContent = `${relatorio.totalCancelados} cancelamento(s)`;
+
+  if (graficoRelatorioPlano) graficoRelatorioPlano.destroy();
+  graficoRelatorioPlano = new Chart(document.getElementById('planReportChart'), {
+    data: {
+      labels: relatorio.labels,
+      datasets: [
+        {
+          type: 'line',
+          label: 'Quantidade do plano',
+          data: relatorio.quantidades,
+          borderColor: '#2f5fa8',
+          backgroundColor: 'rgba(47, 95, 168, 0.12)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+          borderWidth: 2,
+        },
+        {
+          type: 'bar',
+          label: 'Cancelamentos',
+          data: relatorio.cancelados,
+          backgroundColor: '#dc2626',
+          borderRadius: 4,
+          maxBarThickness: 30,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { usePointStyle: true, pointStyle: 'circle' } },
+        tooltip: { callbacks: { label: (item) => `${item.dataset.label}: ${item.parsed.y}` } },
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } },
+      },
+    },
+  });
+
+  detalhe.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderRelatoriosPlanos() {
+  const lista = document.getElementById('lista-relatorios-planos');
+  const termo = document.getElementById('busca-relatorio-plano').value.trim().toLocaleLowerCase('pt-BR');
+  const relatorios = dadosPlanos.relatoriosPlanos.filter((relatorio) =>
+    relatorio.nome.toLocaleLowerCase('pt-BR').includes(termo)
+  );
+  lista.innerHTML = '';
+
+  if (relatorios.length === 0) {
+    lista.appendChild(criarElemento('p', 'text-sm text-slate-500 py-4', 'Nenhum plano encontrado.'));
+    return;
+  }
+
+  relatorios.forEach((relatorio) => {
+    const botao = criarElemento('button', 'text-left rounded-xl border border-slate-200 bg-white p-4 hover:bg-slate-50 transition-colors');
+    botao.type = 'button';
+    botao.dataset.relatorioPlano = relatorio.nome;
+    botao.appendChild(criarElemento('strong', 'block text-sm text-slate-800', relatorio.nome));
+    const resumo = criarElemento('span', 'flex flex-wrap gap-2 mt-2 text-[11px]');
+    resumo.appendChild(criarElemento('span', 'px-2 py-1 rounded-full bg-blue-50 text-blue-700', `${relatorio.quantidadeAtual} atual(is)`));
+    resumo.appendChild(criarElemento('span', 'px-2 py-1 rounded-full bg-red-50 text-red-700', `${relatorio.totalCancelados} cancelado(s)`));
+    botao.appendChild(resumo);
+    botao.addEventListener('click', () => abrirRelatorioPlano(relatorio, botao));
+    lista.appendChild(botao);
+  });
+}
+
 async function carregarPlanos() {
   const erro = document.getElementById('planos-erro');
   try {
@@ -202,6 +287,7 @@ async function carregarPlanos() {
     if (!resposta.ok) throw new Error(resultado.mensagem);
     dadosPlanos = resultado;
     renderPlansPeriodChart(resultado.crescimento);
+    renderRelatoriosPlanos();
     renderDiretorio();
   } catch (falha) {
     const texto = erro?.querySelector('span');
@@ -220,4 +306,5 @@ document.querySelectorAll('[data-filtro]').forEach((botao) => {
   });
 });
 document.getElementById('busca-planos').addEventListener('input', renderDiretorio);
+document.getElementById('busca-relatorio-plano').addEventListener('input', renderRelatoriosPlanos);
 document.addEventListener('DOMContentLoaded', carregarPlanos);

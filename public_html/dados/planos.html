@@ -137,6 +137,36 @@
         </div>
       </div>
 
+      <!-- ===================== Relatorio por plano ===================== -->
+      <div class="cartao animar-entrada atraso-2 p-5 mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-900">Relatorio por plano</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Clique em um plano para ver seu crescimento mensal e cancelamentos</p>
+          </div>
+          <input id="busca-relatorio-plano" type="search" class="px-4 py-2 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-blue-200" placeholder="Buscar nome do plano">
+        </div>
+        <div id="lista-relatorios-planos" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+
+        <div id="detalhe-relatorio-plano" class="mt-5 pt-5 border-t border-slate-100" hidden>
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
+            <div>
+              <p class="text-xs text-slate-500">Plano selecionado</p>
+              <h3 id="nome-relatorio-plano" class="text-base font-semibold text-slate-900"></h3>
+            </div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <span id="quantidade-relatorio-plano" class="px-3 py-2 rounded-lg bg-blue-50 text-blue-700"></span>
+              <span id="projecao-relatorio-plano" class="px-3 py-2 rounded-lg bg-green-50 text-green-700"></span>
+              <span id="cancelados-relatorio-plano" class="px-3 py-2 rounded-lg bg-red-50 text-red-700"></span>
+            </div>
+          </div>
+          <div class="caixa-grafico" style="height:300px;">
+            <canvas id="planReportChart"></canvas>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-3">Cancelamentos sem nome de plano na planilha nao sao atribuidos a um plano especifico.</p>
+        </div>
+      </div>
+
       <!-- ===================== Todos os planos ===================== -->
       <div class="cartao animar-entrada atraso-2 overflow-hidden">
         <div class="px-5 pt-5 pb-4 border-b border-slate-100">
@@ -173,4 +203,3 @@
 <script src="js/planos.js"></script>
 </body>
 </html>
-
