@@ -1,19 +1,38 @@
 <?php
 declare(strict_types=1);
 
+header('Content-Type: application/json; charset=utf-8');
+header('X-Content-Type-Options: nosniff');
+header('Cache-Control: no-store');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Content-Type');
+
 require_once dirname(__DIR__) . '/config/banco.php';
 require_once dirname(__DIR__) . '/config/api.php';
 
 iniciarRespostaApi();
-exigirAcessoApi();
 date_default_timezone_set('America/Sao_Paulo');
 
 try {
     $pdo = conectarBanco();
+
+    // 1. Buscar lista de todos os planos cadastrados no MySQL
+    $stmtPlanos = $pdo->query("SELECT id, nome, valor, duracao_dias FROM planos ORDER BY id ASC");
+    $planos = array_map(
+        static fn (array $p): array => [
+            'id' => (int) $p['id'],
+            'nome' => $p['nome'],
+            'valor' => (float) $p['valor'],
+            'duracaoDias' => (int) $p['duracao_dias']
+        ],
+        $stmtPlanos->fetchAll()
+    );
+
+    // 2. Buscar assinaturas/membros cadastrados no MySQL com status (incluindo Cancelado)
     $consulta = $pdo->query(
         "SELECT
-            a.id, c.nome AS cliente, p.nome AS pet, pl.nome AS plano,
-            pl.valor, a.data_inicio, a.data_vencimento,
+            a.id, c.id AS cliente_id, c.nome AS cliente, c.email AS email, p.nome AS pet,
+            pl.id AS plano_id, pl.nome AS plano, pl.valor, a.data_inicio, a.data_vencimento,
             CASE
               WHEN a.status = 'Cancelado' THEN 'Cancelado'
               WHEN a.data_inicio IS NULL OR a.data_vencimento IS NULL THEN 'Sem data'
@@ -31,8 +50,11 @@ try {
     $assinaturas = array_map(
         static fn (array $linha): array => [
             'id' => (int) $linha['id'],
+            'clienteId' => (int) $linha['cliente_id'],
             'cliente' => $linha['cliente'],
+            'email' => $linha['email'] ?? '',
             'pet' => $linha['pet'],
+            'planoId' => (int) $linha['plano_id'],
             'plano' => $linha['plano'],
             'valor' => (float) $linha['valor'],
             'dataInicio' => $linha['data_inicio'],
@@ -42,36 +64,15 @@ try {
         $consulta->fetchAll()
     );
 
-    $inicio = (new DateTimeImmutable('first day of this month'))->modify('-5 months');
-    $mesesPt = [1 => 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    $labels = [];
-    $valores = [];
-    for ($indice = 0; $indice < 6; $indice++) {
-        $mes = $inicio->modify("+{$indice} months");
-        $proximo = $mes->modify('+1 month');
-        $labels[] = $mesesPt[(int) $mes->format('n')];
-        $total = 0;
-        foreach ($assinaturas as $assinatura) {
-            if (
-                $assinatura['dataInicio'] !== null
-                && $assinatura['dataInicio'] >= $mes->format('Y-m-d')
-                && $assinatura['dataInicio'] < $proximo->format('Y-m-d')
-            ) {
-                $total++;
-            }
-        }
-        $valores[] = $total;
-    }
-
     responderJson(200, [
         'sucesso' => true,
-        'assinaturas' => $assinaturas,
-        'serie' => ['labels' => $labels, 'valores' => $valores],
+        'planos' => $planos,
+        'assinaturas' => $assinaturas
     ]);
 } catch (Throwable $erro) {
     error_log($erro->getMessage());
     responderJson(500, [
         'sucesso' => false,
-        'mensagem' => 'Nao foi possivel carregar os planos.',
+        'mensagem' => 'Nao foi possivel carregar os planos do banco de dados: ' . $erro->getMessage(),
     ]);
 }

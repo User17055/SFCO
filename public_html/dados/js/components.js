@@ -10,7 +10,7 @@ const STATUS_BADGE_MAP = {
   'Ativo': 'selo-verde',
   'Pendente': 'selo-amarelo',
   'Vencido': 'selo-vermelho',
-  'Cancelado': 'selo-cinza',
+  'Cancelado': 'selo-vermelho',
 };
 
 /** Paleta usada para colorir o fundo dos avatares de iniciais */

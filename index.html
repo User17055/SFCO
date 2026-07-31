@@ -3,15 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Administrativo · TudoPraPet</title>
+<title>Painel Administrativo · TudoPraPet (Banco de Dados MySQL)</title>
 <link rel="stylesheet" href="style.css">
-<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-
-
 </head>
 <body>
 
+  <!-- ===== TOPBAR ===== -->
   <nav class="topbar">
     <div class="brand">
       <img src="img/logo-tudoprapet.png" alt="Logo TudoPraPet" class="logo">
@@ -19,10 +17,10 @@
     </div>
     <div class="topbar-right">
       <div class="admin-meta">
-        <div class="admin-title">Painel Administrativo</div>
-        <div class="admin-email">andrejunior.rodriguesdasilva@gmail.com</div>
+        <div class="admin-title">Painel Administrativo (MySQL)</div>
+        <div class="admin-email">dadosplanilha.mysql.dbaas.com.br</div>
       </div>
-      <button class="btn-store" type="button">Ver loja</button>
+      <button class="btn-store" type="button" onclick="alert('Modo visualização de loja ativado.')">Ver loja</button>
     </div>
 
     <div class="paw-trail" aria-hidden="true">
@@ -32,10 +30,8 @@
       <img src="img/pataamarela.png" class="paw paw-4" alt="">
       <img src="img/pataamarela.png" class="paw paw-5" alt="">
       <img src="img/pataamarela.png" class="paw paw-6" alt="">
-       <img src="img/pataamarela.png" class="paw paw-7" alt="">
+      <img src="img/pataamarela.png" class="paw paw-7" alt="">
       <img src="img/pataamarela.png" class="paw paw-8" alt="">
-     
-   
     </div>
   </nav>
 
@@ -44,21 +40,20 @@
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar">
       <nav>
-        
-
         <div class="nav-card">
           <div class="nav-group">
             <span class="nav-title">Clube</span>
-            <button class="nav-link" data-target="clube-usuarios"> <i class='bx bxs-home'></i> Usuários</button>
+            <button class="nav-link active" data-target="usuarios"> <i class='bx bxs-home'></i> Usuários</button>
             <button class="nav-link" data-target="clube-membros"> <i class="bx bxs-group"></i> Membros</button>
-            <button class="nav-link" data-target="clube-preco"> <i class="bx bxs-dollar-circle"></i> Preço do clube</button>
+            <button class="nav-link" data-target="clube-cancelados"> <i class="bx bxs-x-circle" style="color:#dc2626;"></i> Cancelados</button>
+            <button class="nav-link" data-target="clube-preco"> <i class="bx bxs-dollar-circle"></i> Gerenciar Planos</button>
             <button class="nav-link" data-target="clube-indicacoes"> <i class="bx bxs-purchase-tag"></i> Indicações</button>
           </div>
 
           <div class="nav-group">
             <span class="nav-title">Catálogo</span>
             <button class="nav-link" data-target="catalogo-conteudo"> <i class="bx bxs-book-content"></i> Conteúdo</button>
-            <button class="nav-link" data-target="catalogo-detalhes"> <i class="bx bxs-detail"></i>  Detalhes</button>
+            <button class="nav-link" data-target="catalogo-detalhes"> <i class="bx bxs-detail"></i> Detalhes</button>
             <button class="nav-link" data-target="catalogo-ordem"> <i class="bx bx-sort"></i> Ordem</button>
             <button class="nav-link" data-target="catalogo-menu"> <i class="bx bx-menu"></i> Menu</button>
           </div>
@@ -76,7 +71,7 @@
         </div>
 
         <div class="imagem-flutuante">
-          <img src="img/semfundo.png" alt="imagem sem fundo" class="imagem-flutuante">
+          <img src="img/semfundo.png" alt="imagem flutuante" class="imagem-flutuante">
         </div>
       </nav>
     </aside>
@@ -84,24 +79,72 @@
     <!-- ===== CONTENT ===== -->
     <main class="content">
 
-      <!-- USUÁRIOS CADASTRADOS -->
+      <!-- USUÁRIOS CADASTRADOS & "VALORES QUE EU TERIA" -->
       <section id="usuarios" class="panel active">
         <div class="panel-header">
           <div>
-            <h2>Central de usuários cadastrados</h2>
-            <p>Gerencie todos os usuários da plataforma TudoPraPet.</p>
+            <h2>Central de Pessoas & Planos (Conectado ao Banco MySQL)</h2>
+            <p>Gerenciamento completo integrado ao banco de dados com projeção de receita estimada ("Valores Que Eu Teria").</p>
           </div>
-          <button class="btn-primary" type="button">+ Novo usuário</button>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn-secondary" type="button" id="btn-abrir-importar">
+              <i class='bx bx-upload'></i> Importar Planilha (CSV)
+            </button>
+            <button class="btn-secondary" type="button" id="btn-exportar-csv">
+              <i class='bx bx-download'></i> Exportar CSV
+            </button>
+            <button class="btn-primary" type="button" id="btn-abrir-novo-usuario">
+              <i class='bx bx-plus-circle'></i> + Nova Pessoa
+            </button>
+          </div>
         </div>
 
+        <!-- KPIs: "VALORES QUE EU TERIA" -->
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-accent">
+            <div class="kpi-header">
+              <span class="kpi-title">Valores Mensais Que Eu Teria</span>
+              <i class='bx bx-trending-up kpi-icon'></i>
+            </div>
+            <div class="kpi-value" id="kpi-receita-mensal">R$ 0,00</div>
+            <div class="kpi-subtext">Estimativa total dos planos ativos no mês</div>
+          </div>
+
+          <div class="kpi-card kpi-success">
+            <div class="kpi-header">
+              <span class="kpi-title">Projeção Anual Que Eu Teria</span>
+              <i class='bx bx-calendar-star kpi-icon'></i>
+            </div>
+            <div class="kpi-value" id="kpi-receita-anual">R$ 0,00</div>
+            <div class="kpi-subtext">Projeção potencial em 12 meses</div>
+          </div>
+
+          <div class="kpi-card kpi-info">
+            <div class="kpi-header">
+              <span class="kpi-title">Pessoas com Plano Ativo</span>
+              <i class='bx bx-user-check kpi-icon'></i>
+            </div>
+            <div class="kpi-value" id="kpi-membros-ativos">0</div>
+            <div class="kpi-subtext"><span id="kpi-membros-cancelados" class="kpi-highlight">0</span> planos cancelados</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Ticket Médio Mensal</span>
+              <i class='bx bx-pie-chart-alt-2 kpi-icon'></i>
+            </div>
+            <div class="kpi-value" id="kpi-ticket-medio">R$ 0,00</div>
+            <div class="kpi-subtext">Média estimada por pessoa com plano</div>
+          </div>
+        </div>
+
+        <!-- FILTROS E BUSCA DA TABELA -->
         <div class="card table-toolbar-card">
           <div class="table-toolbar">
             <div class="toolbar-info">
-              <h3>Usuários cadastrados</h3>
-              <div class="toolbar-stats">
-                <span><strong>128</strong> total cadastrados</span>
-                <span><strong>84</strong> com plano</span>
-                <span><strong>44</strong> sem plano</span>
+              <h3>Pessoas Cadastradas & Planos</h3>
+              <div class="toolbar-stats" id="toolbar-stats-text">
+                Carregando estatísticas...
               </div>
             </div>
             <div class="toolbar-filters">
@@ -110,13 +153,27 @@
                   <circle cx="11" cy="11" r="7"></circle>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" placeholder="Buscar por nome ou email">
+                <input type="text" id="filtro-busca" placeholder="Buscar por nome ou email">
               </div>
-              <input type="date" class="date-filter" title="Filtrar por data de cadastro">
+
+              <select id="filtro-plano" class="select-filter">
+                <option value="">Todos os Planos</option>
+              </select>
+
+              <select id="filtro-status" class="select-filter">
+                <option value="">Todos os Status</option>
+                <option value="Ativo">Ativo</option>
+                <option value="Cancelado">Cancelado</option>
+              </select>
+
+              <button class="btn-secondary btn-sm" id="btn-resetar-dados" title="Restaurar dados padrão">
+                <i class='bx bx-reset'></i> Resetar
+              </button>
             </div>
           </div>
         </div>
 
+        <!-- TABELA DE PESSOAS -->
         <div class="card">
           <table>
             <thead>
@@ -124,343 +181,14 @@
                 <th>Nome</th>
                 <th>Email</th>
                 <th>Plano</th>
+                <th>Valor Mensal</th>
+                <th>Status</th>
                 <th>Cadastrado em</th>
                 <th>Ações</th>
               </tr>
             </thead>
             <tbody id="usuarios-tbody">
-              <tr>
-                <td class="user-name">Ana Beatriz Souza</td>
-                <td class="user-email-cell">ana.souza@email.com</td>
-                <td><span class="badge badge-clube">Clube Pet</span></td>
-                <td>12/03/2025</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">Carlos Eduardo Lima</td>
-                <td class="user-email-cell">carlos.lima@email.com</td>
-                <td><span class="badge badge-basico">Básico</span></td>
-                <td>28/05/2025</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">Fernanda Torres</td>
-                <td class="user-email-cell">fernanda.torres@email.com</td>
-                <td><span class="badge badge-premium">Premium</span></td>
-                <td>03/01/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">João Pedro Martins</td>
-                <td class="user-email-cell">joao.martins@email.com</td>
-                <td><span class="badge badge-clube">Clube Pet</span></td>
-                <td>19/06/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">Mariana Costa</td>
-                <td class="user-email-cell">mariana.costa@email.com</td>
-                <td><span class="badge badge-basico">Básico</span></td>
-                <td>07/07/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-                <tr>
-                <td class="user-name">Julio Rodrigues</td>
-                <td class="user-email-cell">julio.rodrigues@email.com</td>
-                <td><span class="badge badge-basico">Básico</span></td>
-                <td>08/09/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-                <tr>
-                <td class="user-name">Pedro Oliveira</td>
-                <td class="user-email-cell">pedrooliveira@email.com</td>
-                <td><span class="badge badge-clube">Clube Pet</span></td>
-                <td>07/07/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-                <tr>
-                <td class="user-name">Eduardo Albano</td>
-                <td class="user-email-cell">eduardo.albano@email.com</td>
-                <td><span class="badge badge-basico">Básico</span></td>
-                <td>09/10/2025</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-                <tr>
-                <td class="user-name">Jussara Costa</td>
-                <td class="user-email-cell">jussara.costa@email.com</td>
-                <td><span class="badge badge-clube">Clube Pet</span></td>
-                <td>07/04/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">Ana Beatriz Souza</td>
-                <td class="user-email-cell">ana.souza@email.com</td>
-                <td><span class="badge badge-clube">Clube Pet</span></td>
-                <td>12/03/2025</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">Carlos Eduardo Lima</td>
-                <td class="user-email-cell">carlos.lima@email.com</td>
-                <td><span class="badge badge-basico">Básico</span></td>
-                <td>28/05/2025</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">Fernanda Torres</td>
-                <td class="user-email-cell">fernanda.torres@email.com</td>
-                <td><span class="badge badge-premium">Premium</span></td>
-                <td>03/01/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">João Pedro Martins</td>
-                <td class="user-email-cell">joao.martins@email.com</td>
-                <td><span class="badge badge-clube">Clube Pet</span></td>
-                <td>19/06/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">Mariana Costa</td>
-                <td class="user-email-cell">mariana.costa@email.com</td>
-                <td><span class="badge badge-basico">Básico</span></td>
-                <td>07/07/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-                <tr>
-                <td class="user-name">Julio Rodrigues</td>
-                <td class="user-email-cell">julio.rodrigues@email.com</td>
-                <td><span class="badge badge-basico">Básico</span></td>
-                <td>08/09/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-                <tr>
-                <td class="user-name">Pedro Oliveira</td>
-                <td class="user-email-cell">pedrooliveira@email.com</td>
-                <td><span class="badge badge-clube">Clube Pet</span></td>
-                <td>07/07/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-                <tr>
-                <td class="user-name">Eduardo Albano</td>
-                <td class="user-email-cell">eduardo.albano@email.com</td>
-                <td><span class="badge badge-basico">Básico</span></td>
-                <td>09/10/2025</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-                <tr>
-                <td class="user-name">Jussara Costa</td>
-                <td class="user-email-cell">jussara.costa@email.com</td>
-                <td><span class="badge badge-clube">Clube Pet</span></td>
-                <td>07/04/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              </tr>
-                <tr>
-                <td class="user-name">Jussara Costa</td>
-                <td class="user-email-cell">jussara.costa@email.com</td>
-                <td><span class="badge badge-clube">Clube Pet</span></td>
-                <td>07/04/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">Ana Beatriz Souza</td>
-                <td class="user-email-cell">ana.souza@email.com</td>
-                <td><span class="badge badge-clube">Clube Pet</span></td>
-                <td>12/03/2025</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">Ana Beatriz Souza</td>
-                <td class="user-email-cell">ana.souza@email.com</td>
-                <td><span class="badge badge-clube">Clube Pet</span></td>
-                <td>12/03/2025</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">Carlos Eduardo Lima</td>
-                <td class="user-email-cell">carlos.lima@email.com</td>
-                <td><span class="badge badge-basico">Básico</span></td>
-                <td>28/05/2025</td>
-                <td class="row-actions">
-                  <button class="icon-btn icon-btn-only" title="Editar" aria-label="Editar">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    </svg>
-                  </button>
-                  <button class="icon-btn danger">Remover</button>
-                </td>
-              </tr>
-              <tr>
+              <!-- Preenchido via JavaScript -->
             </tbody>
           </table>
         </div>
@@ -468,104 +196,93 @@
         <div class="pagination" id="usuarios-pagination"></div>
       </section>
 
-      <!-- CLUBE > USUÁRIOS -->
-      <section id="clube-usuarios" class="panel">
+      <!-- CLUBE > MEMBROS ATIVOS -->
+      <section id="clube-membros" class="panel">
         <div class="panel-header">
           <div>
-            <h2>Clube · Usuários</h2>
-            <p>Usuários vinculados ao Clube TudoPraPet.</p>
+            <h2>Clube · Membros Ativos</h2>
+            <p>Visão de membros com planos ativos contratados no banco de dados.</p>
           </div>
         </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total de Membros Cadastrados</div>
+            <div class="stat-value" id="membros-card-total">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Planos Ativos</div>
+            <div class="stat-value mustard" id="membros-card-ativos">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Planos Cancelados</div>
+            <div class="stat-value" id="membros-card-cancelados">0</div>
+          </div>
+        </div>
+
         <div class="card">
           <table>
             <thead>
               <tr>
                 <th>Nome</th>
                 <th>Email</th>
+                <th>Plano Contratado</th>
+                <th>Valor Mensal</th>
                 <th>Status</th>
                 <th>Cadastrado em</th>
                 <th>Ações</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td class="user-name">Ana Beatriz Souza</td>
-                <td class="user-email-cell">ana.souza@email.com</td>
-                <td><span class="badge badge-premium">Ativo</span></td>
-                <td>12/03/2025</td>
-                <td class="row-actions">
-                  <button class="icon-btn">Ver</button>
-                </td>
-              </tr>
-              <tr>
-                <td class="user-name">João Pedro Martins</td>
-                <td class="user-email-cell">joao.martins@email.com</td>
-                <td><span class="badge badge-premium">Ativo</span></td>
-                <td>19/06/2026</td>
-                <td class="row-actions">
-                  <button class="icon-btn">Ver</button>
-                </td>
-              </tr>
+            <tbody id="membros-tbody">
+              <!-- Preenchido via JavaScript -->
             </tbody>
           </table>
         </div>
       </section>
 
-      <!-- CLUBE > MEMBROS -->
-      <section id="clube-membros" class="panel">
+      <!-- CLUBE > CANCELADOS (NOVA SEÇÃO EXCLUSIVA PARA CANCELADOS) -->
+      <section id="clube-cancelados" class="panel">
         <div class="panel-header">
           <div>
-            <h2>Clube · Membros</h2>
-            <p>Visão geral dos membros ativos do clube.</p>
+            <h2>Clube · Planos Cancelados</h2>
+            <p>Listagem de todos os membros que tiveram seus planos cancelados com opção de reativação rápida.</p>
           </div>
         </div>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">Membros ativos</div>
-            <div class="stat-value">1.284</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Novos este mês</div>
-            <div class="stat-value mustard">96</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Cancelamentos</div>
-            <div class="stat-value">14</div>
-          </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Plano Cancelado</th>
+                <th>Valor do Plano</th>
+                <th>Status</th>
+                <th>Cadastrado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="cancelados-tbody">
+              <!-- Preenchido via JavaScript -->
+            </tbody>
+          </table>
         </div>
-       <div class="card">
-  <table>
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>Email</th>
-        <th>Plano</th>
-        <th>Cadastrado em</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-
-    <tbody id="membros-tbody">
-
-    </tbody>
-  </table>
-</div>
       </section>
 
-      <!-- CLUBE > PREÇO DO CLUBE -->
+      <!-- CLUBE > GERENCIAR PLANOS (PREÇO E NOMES) -->
       <section id="clube-preco" class="panel">
         <div class="panel-header">
           <div>
-            <h2>Clube · Preço do clube</h2>
-            <p>Configure o valor da assinatura do Clube TudoPraPet.</p>
+            <h2>Clube · Gerenciar Planos & Nomes (Banco MySQL)</h2>
+            <p>Altere os nomes dos planos, ajuste os valores mensais R$ e veja quantas pessoas possuem cada plano.</p>
           </div>
+          <button class="btn-primary" type="button" id="btn-abrir-novo-plano">
+            <i class='bx bx-plus-circle'></i> + Novo Plano
+          </button>
         </div>
-        <div class="card" style="padding:24px;">
-          <label class="price-input-label">Valor mensal (R$)</label>
-          <input type="text" value="49,90" class="price-input">
-          <div class="price-actions">
-            <button class="btn-primary" type="button">Salvar alterações</button>
-          </div>
+
+        <!-- GRID DE PLANOS -->
+        <div class="plans-grid" id="plans-grid-container">
+          <!-- Preenchido via JavaScript -->
         </div>
       </section>
 
@@ -612,7 +329,6 @@
             <h2>Catálogo · Conteúdo</h2>
             <p>Gerencie os produtos e conteúdos exibidos na loja.</p>
           </div>
-          <button class="btn-primary" type="button">+ Novo item</button>
         </div>
         <div class="placeholder-card">
           <h3>Itens do catálogo</h3>
@@ -644,7 +360,7 @@
         </div>
         <div class="placeholder-card">
           <h3>Ordenação</h3>
-          <p>Arraste e solte os itens para reordenar (em breve).</p>
+          <p>Arraste e solte os itens para reordenar.</p>
         </div>
       </section>
 
@@ -669,7 +385,6 @@
             <h2>Vitrine · Banners</h2>
             <p>Gerencie os banners exibidos na loja.</p>
           </div>
-          <button class="btn-primary" type="button">+ Novo banner</button>
         </div>
         <div class="placeholder-card">
           <h3>Banners cadastrados</h3>
@@ -708,85 +423,893 @@
     </main>
   </div>
 
+  <!-- SUPORTE FAB -->
   <a class="support-fab" href="https://wa.me/5518996197282" target="_blank" rel="noopener noreferrer" title="Fale com o suporte" aria-label="Fale com o suporte no WhatsApp">
     <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
     </svg>
   </a>
 
+  <!-- ===================== MODAIS ===================== -->
+
+  <!-- MODAL: EDITAR PESSOA -->
+  <div class="modal-backdrop" id="modal-editar-pessoa">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Editar Pessoa</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-editar-pessoa')">&times;</button>
+      </div>
+      <form id="form-editar-pessoa">
+        <div class="modal-body">
+          <input type="hidden" id="edit-pessoa-id">
+          <div class="form-group">
+            <label class="form-label" for="edit-pessoa-nome">Nome Completo</label>
+            <input type="text" id="edit-pessoa-nome" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-pessoa-email">E-mail</label>
+            <input type="email" id="edit-pessoa-email" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-pessoa-plano">Plano Contratado</label>
+            <select id="edit-pessoa-plano" class="form-control" required>
+              <!-- Preenchido via JS -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-pessoa-status">Status do Plano</label>
+            <select id="edit-pessoa-status" class="form-control" required>
+              <option value="Ativo">Ativo</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-pessoa-data">Data de Cadastro</label>
+            <input type="date" id="edit-pessoa-data" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-editar-pessoa')">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVA PESSOA -->
+  <div class="modal-backdrop" id="modal-nova-pessoa">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Cadastrar Nova Pessoa</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-nova-pessoa')">&times;</button>
+      </div>
+      <form id="form-nova-pessoa">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="novo-pessoa-nome">Nome Completo</label>
+            <input type="text" id="novo-pessoa-nome" class="form-control" placeholder="Ex: Maria Silva" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="novo-pessoa-email">E-mail</label>
+            <input type="email" id="novo-pessoa-email" class="form-control" placeholder="maria@email.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="novo-pessoa-plano">Escolher Plano</label>
+            <select id="novo-pessoa-plano" class="form-control" required>
+              <!-- Preenchido via JS -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="novo-pessoa-status">Status Inicial</label>
+            <select id="novo-pessoa-status" class="form-control" required>
+              <option value="Ativo">Ativo</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="novo-pessoa-data">Data de Cadastro</label>
+            <input type="date" id="novo-pessoa-data" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-nova-pessoa')">Cancelar</button>
+          <button type="submit" class="btn-primary">Cadastrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDITAR NOME / VALOR DO PLANO -->
+  <div class="modal-backdrop" id="modal-editar-plano">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Mudar Nome ou Valor do Plano</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-editar-plano')">&times;</button>
+      </div>
+      <form id="form-editar-plano">
+        <div class="modal-body">
+          <input type="hidden" id="edit-plano-id">
+          <div class="form-group">
+            <label class="form-label" for="edit-plano-nome">Nome do Plano</label>
+            <input type="text" id="edit-plano-nome" class="form-control" placeholder="Ex: Plano Bronze, Clube Pet..." required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-plano-valor">Valor Mensal (R$)</label>
+            <input type="number" step="0.01" min="0" id="edit-plano-valor" class="form-control" placeholder="49.90" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-editar-plano')">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVO PLANO -->
+  <div class="modal-backdrop" id="modal-novo-plano">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Criar Novo Plano</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-novo-plano')">&times;</button>
+      </div>
+      <form id="form-novo-plano">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="novo-plano-nome">Nome do Plano</label>
+            <input type="text" id="novo-plano-nome" class="form-control" placeholder="Ex: Plano Diamante" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="novo-plano-valor">Valor Mensal (R$)</label>
+            <input type="number" step="0.01" min="0" id="novo-plano-valor" class="form-control" placeholder="99.90" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-novo-plano')">Cancelar</button>
+          <button type="submit" class="btn-primary">Criar Plano</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: IMPORTAR PLANILHA (CSV) -->
+  <div class="modal-backdrop" id="modal-importar-planilha">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Importar Planilha de Pessoas</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-importar-planilha')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0;">
+          Selecione seu arquivo <strong>.CSV</strong> ou cole o conteúdo diretamente. O sistema lerá as colunas de Nome, Email, Plano, Valor Mensal e Status.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Arquivo CSV</label>
+          <input type="file" id="arquivo-csv-input" accept=".csv, .txt" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ou Cole o Texto do CSV</label>
+          <textarea id="texto-csv-input" class="form-control" rows="5" placeholder="Nome,Email,Plano,Valor,Status&#10;Ana Souza,ana@email.com,Clube Pet,149.90,Ativo"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-importar-planilha')">Cancelar</button>
+        <button type="button" class="btn-primary" id="btn-processar-csv">Importar Dados</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTAINER DE TOAST NOTIFICATIONS -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ===================== JAVASCRIPT APP CORE (MYSQL & PERSISTÊNCIA) ===================== -->
   <script>
+    const API_BASE_URL = 'public_html/dados/api/';
+
+    // ===== DADOS PADRÃO (FALLBACK) =====
+    const PLANOS_PADRAO = [
+      { id: 1, nome: 'Plano Bronze', valor: 49.90 },
+      { id: 2, nome: 'Plano Prata', valor: 79.90 },
+      { id: 3, nome: 'Plano Ouro', valor: 119.90 },
+      { id: 4, nome: 'Clube Pet', valor: 149.90 },
+      { id: 5, nome: 'Plano Premium', valor: 199.90 }
+    ];
+
+    const PESSOAS_PADRAO = [
+      { id: 1, nome: 'Ana Beatriz Souza', email: 'ana.souza@email.com', planoId: 4, status: 'Ativo', dataCadastro: '2025-03-12' },
+      { id: 2, nome: 'Carlos Eduardo Lima', email: 'carlos.lima@email.com', planoId: 1, status: 'Ativo', dataCadastro: '2025-05-28' },
+      { id: 3, nome: 'Fernanda Torres', email: 'fernanda.torres@email.com', planoId: 5, status: 'Ativo', dataCadastro: '2026-01-03' },
+      { id: 4, nome: 'João Pedro Martins', email: 'joao.martins@email.com', planoId: 4, status: 'Ativo', dataCadastro: '2026-06-19' },
+      { id: 5, nome: 'Mariana Costa', email: 'mariana.costa@email.com', planoId: 1, status: 'Cancelado', dataCadastro: '2026-07-07' },
+      { id: 6, nome: 'Julio Rodrigues', email: 'julio.rodrigues@email.com', planoId: 2, status: 'Ativo', dataCadastro: '2026-09-08' },
+      { id: 7, nome: 'Pedro Oliveira', email: 'pedrooliveira@email.com', planoId: 3, status: 'Ativo', dataCadastro: '2026-07-07' },
+      { id: 8, nome: 'Eduardo Albano', email: 'eduardo.albano@email.com', planoId: 1, status: 'Ativo', dataCadastro: '2025-10-09' },
+      { id: 9, nome: 'Jussara Costa', email: 'jussara.costa@email.com', planoId: 4, status: 'Ativo', dataCadastro: '2026-04-07' },
+      { id: 10, nome: 'Lucas Mendes', email: 'lucas.mendes@email.com', planoId: 2, status: 'Cancelado', dataCadastro: '2026-03-15' }
+    ];
+
+    // ===== ESTADO DA APLICAÇÃO =====
+    let state = {
+      planos: [],
+      pessoas: [],
+      paginaAtual: 1,
+      itensPorPagina: 8
+    };
+
+    // Carregar do Banco de Dados MySQL via API PHP
+    async function carregarEstado() {
+      try {
+        const res = await fetch(API_BASE_URL + 'planos.php', { cache: 'no-store' });
+        const json = await res.json();
+
+        if(json.sucesso) {
+          if(json.planos && json.planos.length > 0) {
+            state.planos = json.planos;
+          } else {
+            state.planos = [...PLANOS_PADRAO];
+          }
+
+          if(json.assinaturas && json.assinaturas.length > 0) {
+            state.pessoas = json.assinaturas.map(a => ({
+              id: a.clienteId || a.id,
+              nome: a.cliente,
+              email: a.email || `${a.cliente.toLowerCase().replace(/\s+/g, '.')}@email.com`,
+              planoId: a.planoId || 1,
+              status: a.status,
+              dataCadastro: a.dataInicio || new Date().toISOString().split('T')[0]
+            }));
+          } else {
+            state.pessoas = [...PESSOAS_PADRAO];
+          }
+        } else {
+          carregarLocalStorageOuPadrao();
+        }
+      } catch(e) {
+        console.warn('Banco MySQL offline no momento, utilizando dados locais.', e);
+        carregarLocalStorageOuPadrao();
+      }
+      renderizarTudo();
+    }
+
+    function carregarLocalStorageOuPadrao() {
+      try {
+        const pSalvos = localStorage.getItem('tpp_planos');
+        const uSalvos = localStorage.getItem('tpp_pessoas');
+        state.planos = pSalvos ? JSON.parse(pSalvos) : [...PLANOS_PADRAO];
+        state.pessoas = uSalvos ? JSON.parse(uSalvos) : [...PESSOAS_PADRAO];
+      } catch(e) {
+        state.planos = [...PLANOS_PADRAO];
+        state.pessoas = [...PESSOAS_PADRAO];
+      }
+    }
+
+    function salvarLocalmente() {
+      localStorage.setItem('tpp_planos', JSON.stringify(state.planos));
+      localStorage.setItem('tpp_pessoas', JSON.stringify(state.pessoas));
+      renderizarTudo();
+    }
+
+    function resetarEstado() {
+      if(confirm('Deseja restaurar os dados iniciais padrão?')) {
+        state.planos = JSON.parse(JSON.stringify(PLANOS_PADRAO));
+        state.pessoas = JSON.parse(JSON.stringify(PESSOAS_PADRAO));
+        salvarLocalmente();
+        mostrarToast('Dados restaurados com sucesso!', 'success');
+      }
+    }
+
+    // ===== FORMATADORES =====
+    function formatarMoeda(val) {
+      return (Number(val) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function formatarDataBR(dataIso) {
+      if(!dataIso) return '-';
+      const partes = dataIso.split('-');
+      if(partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      return dataIso;
+    }
+
+    function obterPlanoPorId(id) {
+      return state.planos.find(p => p.id == id) || { nome: 'Sem Plano', valor: 0 };
+    }
+
+    function mostrarToast(mensagem, tipo = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${tipo === 'danger' ? 'toast-danger' : 'toast-success'}`;
+      toast.innerHTML = `<i class='bx ${tipo === 'danger' ? 'bx-error-circle' : 'bx-check-circle'}'></i> ${mensagem}`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ===== NAVEGAÇÃO DE PAINÉIS =====
     const navLinks = document.querySelectorAll('.nav-link');
     const panels = document.querySelectorAll('.panel');
 
     navLinks.forEach(link => {
       link.addEventListener('click', () => {
         const target = link.getAttribute('data-target');
-
         navLinks.forEach(l => l.classList.remove('active'));
         link.classList.add('active');
-
         panels.forEach(panel => {
           panel.classList.toggle('active', panel.id === target);
         });
       });
     });
 
-    function setupPagination(tbodyId, paginationId, rowsPerPage){
-      const tbody = document.getElementById(tbodyId);
-      const pagination = document.getElementById(paginationId);
-      if(!tbody || !pagination) return;
+    // ===== RENDERIZAÇÃO DOS KPIS ("VALORES QUE EU TERIA") =====
+    function renderizarKPIs() {
+      const pessoasAtivas = state.pessoas.filter(p => p.status === 'Ativo');
+      const pessoasCanceladas = state.pessoas.filter(p => p.status === 'Cancelado');
 
-      const rows = Array.from(tbody.querySelectorAll('tr'));
-      const totalPages = Math.max(1, Math.ceil(rows.length / rowsPerPage));
+      let receitaMensalTotal = 0;
+      pessoasAtivas.forEach(p => {
+        const plano = obterPlanoPorId(p.planoId);
+        receitaMensalTotal += (Number(plano.valor) || 0);
+      });
 
-      function showPage(page){
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
+      const receitaAnualTotal = receitaMensalTotal * 12;
+      const ticketMedio = pessoasAtivas.length > 0 ? (receitaMensalTotal / pessoasAtivas.length) : 0;
 
-        rows.forEach((row, i) => {
-          row.style.display = (i >= start && i < end) ? '' : 'none';
-        });
+      document.getElementById('kpi-receita-mensal').textContent = formatarMoeda(receitaMensalTotal);
+      document.getElementById('kpi-receita-anual').textContent = formatarMoeda(receitaAnualTotal);
+      document.getElementById('kpi-membros-ativos').textContent = pessoasAtivas.length;
+      document.getElementById('kpi-membros-cancelados').textContent = pessoasCanceladas.length;
+      document.getElementById('kpi-ticket-medio').textContent = formatarMoeda(ticketMedio);
 
-        pagination.querySelectorAll('.page-btn').forEach(btn => {
-          btn.classList.toggle('active', Number(btn.dataset.page) === page);
-        });
-      }
+      // Card do Clube > Membros
+      document.getElementById('membros-card-total').textContent = state.pessoas.length;
+      document.getElementById('membros-card-ativos').textContent = pessoasAtivas.length;
+      document.getElementById('membros-card-cancelados').textContent = pessoasCanceladas.length;
 
-      pagination.innerHTML = '';
-      for(let page = 1; page <= totalPages; page++){
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'page-btn';
-        btn.textContent = page;
-        btn.dataset.page = page;
-        btn.addEventListener('click', () => showPage(page));
-        pagination.appendChild(btn);
-      }
-
-      showPage(1);
+      // Texto estatístico toolbar
+      document.getElementById('toolbar-stats-text').innerHTML = `
+        <span><strong>${state.pessoas.length}</strong> total</span>
+        <span><strong style="color:#16a34a;">${pessoasAtivas.length}</strong> ativos</span>
+        <span><strong style="color:#dc2626;">${pessoasCanceladas.length}</strong> cancelados</span>
+      `;
     }
 
-    setupPagination('usuarios-tbody', 'usuarios-pagination', 9);
+    // ===== SELECTS DE PLANOS =====
+    function atualizarSelectsDePlanos() {
+      const selectFiltro = document.getElementById('filtro-plano');
+      const selectEdit = document.getElementById('edit-pessoa-plano');
+      const selectNovo = document.getElementById('novo-pessoa-plano');
 
-    function carregarMembrosPremium() {
-    const usuarios = document.querySelectorAll("#usuarios-tbody tr");
-    const tbody = document.getElementById("membros-tbody");
+      const valorFiltroAtual = selectFiltro.value;
 
-    tbody.innerHTML = "";
-        
-    usuarios.forEach(usuario => {
-        if (
-    usuario.querySelector(".badge-premium") ||
-    usuario.querySelector(".badge-basico")
-) {
-    tbody.appendChild(usuario.cloneNode(true));
-}
+      selectFiltro.innerHTML = '<option value="">Todos os Planos</option>';
+      selectEdit.innerHTML = '';
+      selectNovo.innerHTML = '';
+
+      state.planos.forEach(p => {
+        const opt = `<option value="${p.id}">${p.nome} - ${formatarMoeda(p.valor)}/mês</option>`;
+        selectFiltro.innerHTML += `<option value="${p.id}">${p.nome}</option>`;
+        selectEdit.innerHTML += opt;
+        selectNovo.innerHTML += opt;
+      });
+
+      selectFiltro.value = valorFiltroAtual;
+    }
+
+    // ===== RENDERIZAÇÃO DA TABELA DE PESSOAS E TABELA DE CANCELADOS =====
+    function renderizarTabelaPessoas() {
+      const busca = document.getElementById('filtro-busca').value.toLowerCase().trim();
+      const planoFiltro = document.getElementById('filtro-plano').value;
+      const statusFiltro = document.getElementById('filtro-status').value;
+
+      const pessoasFiltradas = state.pessoas.filter(p => {
+        const bateBusca = p.nome.toLowerCase().includes(busca) || p.email.toLowerCase().includes(busca);
+        const batePlano = !planoFiltro || p.planoId == planoFiltro;
+        const bateStatus = !statusFiltro || p.status === statusFiltro;
+        return bateBusca && batePlano && bateStatus;
+      });
+
+      const totalPaginas = Math.max(1, Math.ceil(pessoasFiltradas.length / state.itensPorPagina));
+      if(state.paginaAtual > totalPaginas) state.paginaAtual = totalPaginas;
+
+      const inicio = (state.paginaAtual - 1) * state.itensPorPagina;
+      const fim = inicio + state.itensPorPagina;
+      const pessoasPagina = pessoasFiltradas.slice(inicio, fim);
+
+      const tbodyMain = document.getElementById('usuarios-tbody');
+      const tbodyMembros = document.getElementById('membros-tbody');
+      const tbodyCancelados = document.getElementById('cancelados-tbody');
+
+      tbodyMain.innerHTML = '';
+      tbodyMembros.innerHTML = '';
+      tbodyCancelados.innerHTML = '';
+
+      if(pessoasPagina.length === 0) {
+        tbodyMain.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">Nenhuma pessoa encontrada.</td></tr>`;
+      } else {
+        pessoasPagina.forEach(p => {
+          const plano = obterPlanoPorId(p.planoId);
+          const isAtivo = p.status === 'Ativo';
+          const statusBadge = isAtivo
+            ? `<span class="badge badge-ativo">Ativo</span>`
+            : `<span class="badge badge-cancelado">Cancelado</span>`;
+
+          const rowHTML = `
+            <tr>
+              <td class="user-name">${p.nome}</td>
+              <td class="user-email-cell">${p.email}</td>
+              <td><span class="badge badge-clube">${plano.nome}</span></td>
+              <td style="font-weight:700; color:var(--navy);">${formatarMoeda(plano.valor)}</td>
+              <td>${statusBadge}</td>
+              <td>${formatarDataBR(p.dataCadastro)}</td>
+              <td class="row-actions">
+                <button class="icon-btn icon-btn-only" title="Editar pessoa" onclick="abrirModalEditarPessoa('${p.id}')">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                  </svg>
+                </button>
+                ${isAtivo
+                  ? `<button class="btn-danger-outline" onclick="alternarStatusPlano('${p.id}')">Cancelar Plano</button>`
+                  : `<button class="btn-success-outline" onclick="alternarStatusPlano('${p.id}')">Reativar Plano</button>`
+                }
+                <button class="icon-btn danger" onclick="removerPessoa('${p.id}')">Excluir</button>
+              </td>
+            </tr>
+          `;
+          tbodyMain.innerHTML += rowHTML;
+        });
+      }
+
+      // Preencher painel de Membros Ativos
+      state.pessoas.filter(p => p.status === 'Ativo').forEach(p => {
+        const plano = obterPlanoPorId(p.planoId);
+        tbodyMembros.innerHTML += `
+          <tr>
+            <td class="user-name">${p.nome}</td>
+            <td class="user-email-cell">${p.email}</td>
+            <td><span class="badge badge-clube">${plano.nome}</span></td>
+            <td style="font-weight:700; color:var(--navy);">${formatarMoeda(plano.valor)}</td>
+            <td><span class="badge badge-ativo">Ativo</span></td>
+            <td>${formatarDataBR(p.dataCadastro)}</td>
+            <td>
+              <button class="btn-danger-outline" onclick="alternarStatusPlano('${p.id}')">Cancelar Plano</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      // Preencher painel exclusivo de Planos Cancelados ("EXIBIR OS CANCELADOS")
+      const cancelados = state.pessoas.filter(p => p.status === 'Cancelado');
+      if(cancelados.length === 0) {
+        tbodyCancelados.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">Nenhum plano cancelado no momento.</td></tr>`;
+      } else {
+        cancelados.forEach(p => {
+          const plano = obterPlanoPorId(p.planoId);
+          tbodyCancelados.innerHTML += `
+            <tr>
+              <td class="user-name">${p.nome}</td>
+              <td class="user-email-cell">${p.email}</td>
+              <td><span class="badge badge-clube">${plano.nome}</span></td>
+              <td style="font-weight:700; color:#dc2626;">${formatarMoeda(plano.valor)}</td>
+              <td><span class="badge badge-cancelado">Cancelado</span></td>
+              <td>${formatarDataBR(p.dataCadastro)}</td>
+              <td>
+                <button class="btn-success-outline" onclick="alternarStatusPlano('${p.id}')">Reativar Plano</button>
+              </td>
+            </tr>
+          `;
+        });
+      }
+
+      renderizarPaginacao(totalPaginas);
+    }
+
+    function renderizarPaginacao(totalPaginas) {
+      const container = document.getElementById('usuarios-pagination');
+      container.innerHTML = '';
+      if(totalPaginas <= 1) return;
+
+      for(let p = 1; p <= totalPaginas; p++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `page-btn ${p === state.paginaAtual ? 'active' : ''}`;
+        btn.textContent = p;
+        btn.addEventListener('click', () => {
+          state.paginaAtual = p;
+          renderizarTabelaPessoas();
+        });
+        container.appendChild(btn);
+      }
+    }
+
+    // ===== RENDERIZAÇÃO DOS PLANOS =====
+    function renderizarGridPlanos() {
+      const container = document.getElementById('plans-grid-container');
+      container.innerHTML = '';
+
+      state.planos.forEach(p => {
+        const membrosAtivosNoPlano = state.pessoas.filter(pes => pes.planoId == p.id && pes.status === 'Ativo').length;
+        const membrosTotaisNoPlano = state.pessoas.filter(pes => pes.planoId == p.id).length;
+        const receitaDoPlano = membrosAtivosNoPlano * (Number(p.valor) || 0);
+
+        const card = document.createElement('div');
+        card.className = 'plan-card';
+        card.innerHTML = `
+          <div>
+            <div class="plan-card-header">
+              <h3 class="plan-name">${p.nome}</h3>
+              <span class="badge badge-clube">${membrosAtivosNoPlano} ativos</span>
+            </div>
+            <div class="plan-price-tag">${formatarMoeda(p.valor)} <span>/ mês</span></div>
+            <div class="plan-stats">
+              <div>Pessoas no plano: <strong>${membrosTotaisNoPlano}</strong></div>
+              <div style="margin-left:auto;">Receita estimada: <strong>${formatarMoeda(receitaDoPlano)}</strong></div>
+            </div>
+          </div>
+          <div class="plan-card-actions">
+            <button class="btn-secondary btn-sm" onclick="abrirModalEditarPlano('${p.id}')">
+              <i class='bx bx-edit-alt'></i> Mudar Nome / Valor
+            </button>
+            <button class="btn-danger-outline btn-sm" onclick="removerPlano('${p.id}')">
+              Excluir
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderizarTudo() {
+      renderizarKPIs();
+      atualizarSelectsDePlanos();
+      renderizarTabelaPessoas();
+      renderizarGridPlanos();
+    }
+
+    // ===== MODAIS =====
+    function openModal(id) {
+      document.getElementById(id).classList.add('open');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    // Editar Pessoa
+    function abrirModalEditarPessoa(idPessoa) {
+      const pessoa = state.pessoas.find(p => p.id == idPessoa);
+      if(!pessoa) return;
+
+      document.getElementById('edit-pessoa-id').value = pessoa.id;
+      document.getElementById('edit-pessoa-nome').value = pessoa.nome;
+      document.getElementById('edit-pessoa-email').value = pessoa.email;
+      document.getElementById('edit-pessoa-plano').value = pessoa.planoId;
+      document.getElementById('edit-pessoa-status').value = pessoa.status;
+      document.getElementById('edit-pessoa-data').value = pessoa.dataCadastro;
+
+      openModal('modal-editar-pessoa');
+    }
+
+    document.getElementById('form-editar-pessoa').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-pessoa-id').value;
+      const index = state.pessoas.findIndex(p => p.id == id);
+
+      if(index !== -1) {
+        const pessoaAtualizada = {
+          id: id,
+          nome: document.getElementById('edit-pessoa-nome').value.trim(),
+          email: document.getElementById('edit-pessoa-email').value.trim(),
+          planoId: document.getElementById('edit-pessoa-plano').value,
+          status: document.getElementById('edit-pessoa-status').value,
+          dataCadastro: document.getElementById('edit-pessoa-data').value
+        };
+
+        state.pessoas[index] = pessoaAtualizada;
+
+        // Salvar no Banco MySQL via API
+        try {
+          await fetch(API_BASE_URL + 'salvar-pessoa.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(pessoaAtualizada)
+          });
+        } catch(err) {
+          console.warn('Persistência local mantida:', err);
+        }
+
+        salvarLocalmente();
+        closeModal('modal-editar-pessoa');
+        mostrarToast('Dados da pessoa salvos no banco de dados!');
+      }
     });
-}
 
-carregarMembrosPremium();
+    // Nova Pessoa
+    document.getElementById('btn-abrir-novo-usuario').addEventListener('click', () => {
+      document.getElementById('novo-pessoa-nome').value = '';
+      document.getElementById('novo-pessoa-email').value = '';
+      document.getElementById('novo-pessoa-data').value = new Date().toISOString().split('T')[0];
+      openModal('modal-nova-pessoa');
+    });
 
-    
+    document.getElementById('form-nova-pessoa').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const novapessoa = {
+        id: Date.now(),
+        nome: document.getElementById('novo-pessoa-nome').value.trim(),
+        email: document.getElementById('novo-pessoa-email').value.trim(),
+        planoId: document.getElementById('novo-pessoa-plano').value,
+        status: document.getElementById('novo-pessoa-status').value,
+        dataCadastro: document.getElementById('novo-pessoa-data').value
+      };
+
+      state.pessoas.unshift(novapessoa);
+
+      // Salvar no Banco MySQL via API
+      try {
+        await fetch(API_BASE_URL + 'salvar-pessoa.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(novapessoa)
+        });
+      } catch(err) {
+        console.warn('Persistência local mantida:', err);
+      }
+
+      salvarLocalmente();
+      closeModal('modal-nova-pessoa');
+      mostrarToast('Nova pessoa gravada no banco de dados!');
+    });
+
+    // Alternar Status / CANCELAR PLANO
+    async function alternarStatusPlano(idPessoa) {
+      const pessoa = state.pessoas.find(p => p.id == idPessoa);
+      if(!pessoa) return;
+
+      const novoStatus = pessoa.status === 'Ativo' ? 'Cancelado' : 'Ativo';
+      pessoa.status = novoStatus;
+
+      // Persistir alteração de cancelamento no Banco MySQL
+      try {
+        await fetch(API_BASE_URL + 'cancelar-plano.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: idPessoa, status: novoStatus })
+        });
+      } catch(err) {
+        console.warn('Cancelamento salvo localmente:', err);
+      }
+
+      salvarLocalmente();
+      mostrarToast(`Plano de ${pessoa.nome} alterado para ${novoStatus}!`, novoStatus === 'Cancelado' ? 'danger' : 'success');
+    }
+
+    // Remover Pessoa
+    async function removerPessoa(idPessoa) {
+      const pessoa = state.pessoas.find(p => p.id == idPessoa);
+      if(!pessoa) return;
+
+      if(confirm(`Deseja realmente remover ${pessoa.nome} do banco de dados?`)) {
+        state.pessoas = state.pessoas.filter(p => p.id != idPessoa);
+
+        try {
+          await fetch(API_BASE_URL + 'excluir-pessoa.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: idPessoa })
+          });
+        } catch(err) {
+          console.warn('Remoção local mantida:', err);
+        }
+
+        salvarLocalmente();
+        mostrarToast('Pessoa removida do banco de dados!');
+      }
+    }
+
+    // Editar Plano / Mudar Nome do Plano
+    function abrirModalEditarPlano(idPlano) {
+      const plano = state.planos.find(p => p.id == idPlano);
+      if(!plano) return;
+
+      document.getElementById('edit-plano-id').value = plano.id;
+      document.getElementById('edit-plano-nome').value = plano.nome;
+      document.getElementById('edit-plano-valor').value = plano.valor;
+
+      openModal('modal-editar-plano');
+    }
+
+    document.getElementById('form-editar-plano').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-plano-id').value;
+      const plano = state.planos.find(p => p.id == id);
+
+      if(plano) {
+        plano.nome = document.getElementById('edit-plano-nome').value.trim();
+        plano.valor = parseFloat(document.getElementById('edit-plano-valor').value) || 0;
+
+        try {
+          await fetch(API_BASE_URL + 'salvar-plano.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: plano.id, nome: plano.nome, valor: plano.valor })
+          });
+        } catch(err) {
+          console.warn('Plano salvo localmente:', err);
+        }
+
+        salvarLocalmente();
+        closeModal('modal-editar-plano');
+        mostrarToast('Nome/Valor do plano atualizado no banco de dados!');
+      }
+    });
+
+    // Criar Novo Plano
+    document.getElementById('btn-abrir-novo-plano').addEventListener('click', () => {
+      document.getElementById('novo-plano-nome').value = '';
+      document.getElementById('novo-plano-valor').value = '';
+      openModal('modal-novo-plano');
+    });
+
+    document.getElementById('form-novo-plano').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const novoPlano = {
+        id: Date.now(),
+        nome: document.getElementById('novo-plano-nome').value.trim(),
+        valor: parseFloat(document.getElementById('novo-plano-valor').value) || 0
+      };
+
+      state.planos.push(novoPlano);
+
+      try {
+        await fetch(API_BASE_URL + 'salvar-plano.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome: novoPlano.nome, valor: novoPlano.valor })
+        });
+      } catch(err) {
+        console.warn('Novo plano salvo localmente:', err);
+      }
+
+      salvarLocalmente();
+      closeModal('modal-novo-plano');
+      mostrarToast('Novo plano criado com sucesso!');
+    });
+
+    // Remover Plano
+    function removerPlano(idPlano) {
+      const associados = state.pessoas.filter(p => p.planoId == idPlano).length;
+      if(associados > 0) {
+        alert(`Não é possível excluir este plano pois existem ${associados} pessoas vinculadas a ele. Altere o plano das pessoas antes de excluir.`);
+        return;
+      }
+
+      if(confirm('Deseja realmente excluir este plano?')) {
+        state.planos = state.planos.filter(p => p.id != idPlano);
+        salvarLocalmente();
+        mostrarToast('Plano excluído com sucesso!');
+      }
+    }
+
+    // ===== IMPORTAÇÃO DE PLANILHA CSV =====
+    document.getElementById('btn-abrir-importar').addEventListener('click', () => {
+      document.getElementById('arquivo-csv-input').value = '';
+      document.getElementById('texto-csv-input').value = '';
+      openModal('modal-importar-planilha');
+    });
+
+    document.getElementById('btn-processar-csv').addEventListener('click', () => {
+      const fileInput = document.getElementById('arquivo-csv-input');
+      const textInput = document.getElementById('texto-csv-input').value.trim();
+
+      if(fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          processarConteudoCSV(e.target.result);
+        };
+        reader.readAsText(file);
+      } else if(textInput.length > 0) {
+        processarConteudoCSV(textInput);
+      } else {
+        alert('Por favor, selecione um arquivo CSV ou cole o texto da planilha.');
+      }
+    });
+
+    async function processarConteudoCSV(conteudo) {
+      const linhas = conteudo.split(/\r?\n/).filter(l => l.trim().length > 0);
+      if(linhas.length <= 1) {
+        alert('Conteúdo de planilha inválido ou muito curto.');
+        return;
+      }
+
+      const cabecalho = linhas[0];
+      let delim = ',';
+      if(cabecalho.includes(';')) delim = ';';
+      else if(cabecalho.includes('\t')) delim = '\t';
+
+      let adicionados = 0;
+
+      for(let i = 1; i < linhas.length; i++) {
+        const cols = linhas[i].split(delim).map(c => c.trim().replace(/^["']|["']$/g, ''));
+        if(cols.length < 2) continue;
+
+        const nome = cols[0] || 'Sem Nome';
+        const email = cols[1] || 'sem.email@exemplo.com';
+        const nomePlano = cols[2] || 'Plano Bronze';
+        const valorPlano = parseFloat(cols[3]) || 49.90;
+        const status = (cols[4] && cols[4].toLowerCase().includes('can')) ? 'Cancelado' : 'Ativo';
+        const dataCadastro = cols[5] || new Date().toISOString().split('T')[0];
+
+        let plano = state.planos.find(p => p.nome.toLowerCase() === nomePlano.toLowerCase());
+        if(!plano) {
+          plano = { id: Date.now() + i, nome: nomePlano, valor: valorPlano };
+          state.planos.push(plano);
+        }
+
+        const novapessoa = {
+          id: Date.now() + i,
+          nome: nome,
+          email: email,
+          planoId: plano.id,
+          status: status,
+          dataCadastro: dataCadastro
+        };
+
+        state.pessoas.unshift(novapessoa);
+        adicionados++;
+
+        // Enviar para o banco MySQL
+        try {
+          fetch(API_BASE_URL + 'salvar-pessoa.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(novapessoa)
+          });
+        } catch(e){}
+      }
+
+      salvarLocalmente();
+      closeModal('modal-importar-planilha');
+      mostrarToast(`${adicionados} pessoas importadas para o banco com sucesso!`);
+    }
+
+    // ===== EXPORTAÇÃO CSV =====
+    document.getElementById('btn-exportar-csv').addEventListener('click', () => {
+      let csv = 'Nome;Email;Plano;Valor Mensal;Status;Data de Cadastro\n';
+      state.pessoas.forEach(p => {
+        const plano = obterPlanoPorId(p.planoId);
+        csv += `"${p.nome}";"${p.email}";"${plano.nome}";${plano.valor};"${p.status}";"${p.dataCadastro}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', `planilha_membros_tudoprapet_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      mostrarToast('Planilha exportada com sucesso!');
+    });
+
+    // ===== LISTENERS DE FILTROS =====
+    document.getElementById('filtro-busca').addEventListener('input', () => {
+      state.paginaAtual = 1;
+      renderizarTabelaPessoas();
+    });
+
+    document.getElementById('filtro-plano').addEventListener('change', () => {
+      state.paginaAtual = 1;
+      renderizarTabelaPessoas();
+    });
+
+    document.getElementById('filtro-status').addEventListener('change', () => {
+      state.paginaAtual = 1;
+      renderizarTabelaPessoas();
+    });
+
+    document.getElementById('btn-resetar-dados').addEventListener('click', resetarEstado);
+
+    // ===== INICIALIZAÇÃO =====
+    carregarEstado();
   </script>
 
 </body>
