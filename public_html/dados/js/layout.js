@@ -47,6 +47,13 @@ window.estabilizarGrafico = function (grafico) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  const filtroCancelados = new URLSearchParams(window.location.search).get('filtro') === 'cancelados';
+  const menuCancelados = document.querySelector('[data-menu-cancelados]');
+  if (filtroCancelados && menuCancelados) {
+    document.querySelectorAll('.link-menu.ativo').forEach((link) => link.classList.remove('ativo'));
+    menuCancelados.classList.add('ativo');
+  }
+
   const toggle = document.getElementById('sidebar-toggle');
   const sidebar = document.querySelector('.barra-lateral');
   const mainArea = document.getElementById('main-area');
