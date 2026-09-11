@@ -49,7 +49,7 @@ function correspondeBusca(item, termo) {
 
 function badgeStatus(item) {
   if (item.status === 'Cancelado') return ['bg-red-100 text-red-700', 'Cancelado'];
-  if (item.novo) return ['bg-amber-100 text-amber-800', 'Novo'];
+  if (item.novo) return ['bg-slate-100 text-slate-700', 'Novo'];
   return ['bg-green-100 text-green-700', 'Ativo'];
 }
 

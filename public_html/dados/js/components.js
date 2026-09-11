@@ -8,7 +8,7 @@
 /** Classe CSS do selo (badge) de acordo com o status do plano */
 const STATUS_BADGE_MAP = {
   'Ativo': 'selo-verde',
-  'Pendente': 'selo-amarelo',
+  'Pendente': 'selo-cinza',
   'Vencido': 'selo-vermelho',
   'Cancelado': 'selo-vermelho',
 };

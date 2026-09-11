@@ -6,21 +6,21 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Relatorio do plano · TudoPraPet</title>
+<title>Relatorio do plano · São Francisco</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Poppins','sans-serif']}}}};</script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="stylesheet" href="css/style.css?v=20260731-2">
+<link rel="stylesheet" href="css/style.css?v=20260911-1">
 </head>
 <body class="font-sans">
 <div class="estrutura-app">
   <aside class="barra-lateral">
     <div class="px-4 pt-6 pb-3">
       <span class="font-extrabold text-2xl tracking-tight">
-        <span style="color:var(--color-accent);">Tudo</span><span class="text-white">Pra</span><span style="color:var(--color-accent);">Pet</span>
+        <span class="text-white">São Francisco</span>
       </span>
     </div>
     <div class="painel-menu">
@@ -47,7 +47,7 @@
       <div class="h-16 flex items-center justify-between gap-4 px-4 lg:px-8">
         <button id="sidebar-toggle" class="botao-icone lg:hidden"><i data-lucide="menu" class="w-5 h-5"></i></button>
         <div class="hidden sm:flex items-center gap-2">
-          <div class="avatar-iniciais" data-usuario-iniciais style="width:30px;height:30px;font-size:11px;background:#ebbd25;">...</div>
+          <div class="avatar-iniciais" data-usuario-iniciais style="width:30px;height:30px;font-size:11px;background:#2f5fa8;">...</div>
           <span class="text-sm font-medium text-slate-700" data-usuario-nome>Carregando...</span>
         </div>
       </div>
@@ -72,7 +72,7 @@
           <div class="cartao p-4"><p class="text-xs text-slate-500">Valor do plano</p><strong id="metrica-valor" class="block text-xl text-slate-900 mt-2">-</strong></div>
           <div class="cartao p-4"><p class="text-xs text-blue-600">Planos ativos</p><strong id="metrica-ativos" class="block text-xl text-blue-800 mt-2">-</strong></div>
           <div class="cartao p-4"><p class="text-xs text-green-600">Valor mensal</p><strong id="metrica-projecao" class="block text-xl text-green-800 mt-2">-</strong></div>
-          <div class="cartao p-4"><p class="text-xs text-amber-700">Novos no mes</p><strong id="metrica-novos" class="block text-xl text-amber-900 mt-2">-</strong></div>
+          <div class="cartao p-4"><p class="text-xs text-slate-600">Novos no mes</p><strong id="metrica-novos" class="block text-xl text-slate-900 mt-2">-</strong></div>
           <div class="cartao p-4"><p class="text-xs text-red-600">Cancelamentos</p><strong id="metrica-cancelados" class="block text-xl text-red-800 mt-2">-</strong></div>
           <div class="cartao p-4"><p class="text-xs text-red-600">Valor cancelado</p><strong id="metrica-valor-cancelado" class="block text-xl text-red-800 mt-2">-</strong></div>
         </div>
