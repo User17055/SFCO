@@ -16,59 +16,51 @@ function chaveMovimentoPlano(string $cliente, string $pet, string $plano): strin
 }
 
 /**
- * Calcula a primeira aparicao de cada combinacao tutor + pet + plano.
- * A competencia atual usa as assinaturas ativas; as anteriores usam o historico.
+ * Calcula os novos pela data de inicio informada na planilha. A competencia
+ * atual e o mes imediatamente posterior ao ultimo retrato historico importado.
  */
 function calcularMovimentosPlanos(PDO $pdo): array
 {
-    $competenciaAtual = date('Y-m');
-    $chavesPorMes = [];
+    $ultimaCompetencia = $pdo->query(
+        "SELECT DATE_FORMAT(MAX(competencia), '%Y-%m') FROM historico_planos"
+    )->fetchColumn();
+    $competenciaAtual = $ultimaCompetencia
+        ? (new DateTimeImmutable($ultimaCompetencia . '-01'))->modify('+1 month')->format('Y-m')
+        : date('Y-m');
+
+    $novosPorMes = [];
+    $novosAtuais = [];
 
     $historico = $pdo->query(
         "SELECT DATE_FORMAT(competencia, '%Y-%m') AS competencia,
-                cliente_nome, pet_nome, plano_nome
+                DATE_FORMAT(data_inicio, '%Y-%m') AS competencia_inicio
            FROM historico_planos
           ORDER BY competencia, id"
     );
     foreach ($historico->fetchAll() as $linha) {
-        $chave = chaveMovimentoPlano(
-            $linha['cliente_nome'],
-            $linha['pet_nome'],
-            $linha['plano_nome']
-        );
-        $chavesPorMes[$linha['competencia']][$chave] = true;
+        $novosPorMes[$linha['competencia']] ??= 0;
+        if ($linha['competencia_inicio'] === $linha['competencia']) {
+            $novosPorMes[$linha['competencia']]++;
+        }
     }
 
-    $atuais = $pdo->query(
+    $atuais = $pdo->prepare(
         "SELECT c.nome AS cliente, p.nome AS pet, pl.nome AS plano
            FROM assinaturas a
            JOIN pets p ON p.id = a.pet_id
            JOIN clientes c ON c.id = p.cliente_id
            JOIN planos pl ON pl.id = a.plano_id
-          WHERE a.status = 'Ativo'"
+          WHERE a.status = 'Ativo'
+            AND DATE_FORMAT(a.data_inicio, '%Y-%m') = ?"
     );
+    $atuais->execute([$competenciaAtual]);
+    $novosPorMes[$competenciaAtual] ??= 0;
     foreach ($atuais->fetchAll() as $linha) {
         $chave = chaveMovimentoPlano($linha['cliente'], $linha['pet'], $linha['plano']);
-        $chavesPorMes[$competenciaAtual][$chave] = true;
+        $novosAtuais[$chave] = true;
+        $novosPorMes[$competenciaAtual]++;
     }
-
-    ksort($chavesPorMes);
-    $vistos = [];
-    $novosPorMes = [];
-    $novosAtuais = [];
-    foreach ($chavesPorMes as $competencia => $chaves) {
-        $novos = [];
-        foreach ($chaves as $chave => $_) {
-            if (!isset($vistos[$chave])) {
-                $novos[$chave] = true;
-            }
-        }
-        $novosPorMes[$competencia] = count($novos);
-        if ($competencia === $competenciaAtual) {
-            $novosAtuais = $novos;
-        }
-        $vistos += $chaves;
-    }
+    ksort($novosPorMes);
 
     $canceladosPorMes = [];
     $cancelamentos = $pdo->query(

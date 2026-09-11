@@ -141,8 +141,7 @@ try {
      * de gravar o novo. Isso evita sobras quando linhas forem inseridas,
      * removidas ou movidas na planilha atualizada.
      */
-    $pdo->prepare('DELETE FROM historico_planos WHERE origem = ?')
-        ->execute(['PLANOS 2026 - DETAILS']);
+    $pdo->exec("DELETE FROM historico_planos WHERE origem LIKE 'PLANOS 2026 - %'");
     $pdo->prepare('DELETE FROM cancelamentos WHERE origem = ?')
         ->execute(['PLANOS 2026 - CANCELAMENTOS']);
     $pdo->exec("DELETE FROM assinaturas WHERE origem LIKE 'PLANOS 2026 - %'");

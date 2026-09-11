@@ -182,27 +182,26 @@ try {
         $relatorios[$chave]['valoresMensais'][$linha['competencia']] = (float) $linha['valor_mensal'];
     }
 
-    /* Novos contratos por plano: primeira aparicao de tutor + pet + plano. */
-    $chavesVistas = [];
+    /* Novos contratos por plano: data de inicio dentro da competencia exibida. */
     $historicoNovos = $pdo->query(
         "SELECT DATE_FORMAT(competencia, '%Y-%m') AS competencia,
-                cliente_nome, pet_nome, plano_nome
-           FROM historico_planos ORDER BY competencia, id"
+                plano_nome
+           FROM historico_planos
+          WHERE data_inicio IS NOT NULL
+            AND DATE_FORMAT(data_inicio, '%Y-%m') = DATE_FORMAT(competencia, '%Y-%m')
+          ORDER BY competencia, id"
     );
     foreach ($historicoNovos->fetchAll() as $linha) {
-        $chaveMovimento = chaveMovimentoPlano($linha['cliente_nome'], $linha['pet_nome'], $linha['plano_nome']);
-        if (isset($chavesVistas[$chaveMovimento])) continue;
-        $chavesVistas[$chaveMovimento] = true;
         $chavePlano = $normalizarNomePlano($linha['plano_nome']);
         if (isset($relatorios[$chavePlano])) {
             $relatorios[$chavePlano]['novos'][$linha['competencia']]++;
         }
     }
     foreach ($assinaturas as $assinatura) {
-        if ($assinatura['status'] !== 'Ativo') continue;
-        $chaveMovimento = chaveMovimentoPlano($assinatura['cliente'], $assinatura['pet'], $assinatura['plano']);
-        if (isset($chavesVistas[$chaveMovimento])) continue;
-        $chavesVistas[$chaveMovimento] = true;
+        if ($assinatura['status'] !== 'Ativo'
+            || substr((string) $assinatura['dataInicio'], 0, 7) !== $movimentos['competenciaAtual']) {
+            continue;
+        }
         $chavePlano = $normalizarNomePlano($assinatura['plano']);
         if (isset($relatorios[$chavePlano])) {
             $relatorios[$chavePlano]['novos'][$movimentos['competenciaAtual']]++;
@@ -287,7 +286,7 @@ try {
     }
 
     $relatoriosPlanos = array_map(
-        static function (array $relatorio) use ($todasCompetencias, $rotulosCompetencias): array {
+        static function (array $relatorio) use ($todasCompetencias, $rotulosCompetencias, $movimentos): array {
             return [
                 'nome' => $relatorio['nome'],
                 'valorPlano' => (float) $relatorio['valorPlano'],
@@ -295,7 +294,7 @@ try {
                 'projecaoAtual' => (float) $relatorio['projecaoAtual'],
                 'totalCancelados' => array_sum($relatorio['cancelados']),
                 'valorTotalCancelado' => array_sum($relatorio['valoresCancelados']),
-                'novosMesAtual' => (int) ($relatorio['novos'][date('Y-m')] ?? 0),
+                'novosMesAtual' => (int) ($relatorio['novos'][$movimentos['competenciaAtual']] ?? 0),
                 'labels' => $rotulosCompetencias,
                 'quantidades' => array_map(
                     static fn (string $competencia): int => $relatorio['quantidades'][$competencia] ?? 0,

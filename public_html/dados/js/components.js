@@ -14,7 +14,7 @@ const STATUS_BADGE_MAP = {
 };
 
 /** Paleta usada para colorir o fundo dos avatares de iniciais */
-const CORES_AVATAR = ['#2563eb', '#16a34a', '#d97706', '#db2777', '#7c3aed', '#0891b2'];
+const CORES_AVATAR = ['#0c387e', '#2f5fa8', '#64748b', '#1c3f78', '#94a3b8', '#245095'];
 
 /** Formata um numero como moeda brasileira (R$) */
 function formatCurrency(value) {

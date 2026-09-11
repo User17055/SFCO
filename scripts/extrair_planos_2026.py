@@ -154,9 +154,45 @@ def extrair(caminho: Path) -> dict:
             "quantidade_banho": inteiro(qtd_banho),
             "valor_banho": numero(valor_banho, None),
             "observacoes": None,
-            "origem": "PLANOS 2026 - DETAILS",
+            "origem": "PLANOS 2026 - HISTORICO",
             "linha_origem": linha,
         })
+
+    # DETAILS nem sempre acompanha as ultimas abas mensais. Completa o historico
+    # com cada aba anterior a atual que ainda nao exista em DETAILS. Assim o
+    # painel nao compara setembro diretamente com junho, por exemplo.
+    competencias_historico = {item["competencia"] for item in historico}
+    for mes_numero, nome_aba in sorted(abas_mensais.items()):
+        if mes_numero >= mes_atual:
+            continue
+        competencia = f"{ano_atual:04d}-{mes_numero:02d}-01"
+        if competencia in competencias_historico:
+            continue
+        aba_mensal = workbook[nome_aba]
+        for linha, valores in enumerate(aba_mensal.iter_rows(min_row=2, values_only=True), start=2):
+            dados = list(valores[:10]) + [None] * max(0, 10 - len(valores))
+            inicio, reajuste, cliente, plano, adicional, valor, pet, pago, meses, comprovante = dados[:10]
+            cliente_nome = texto(cliente)
+            pet_nome = texto(pet)
+            if not cliente_nome or not pet_nome:
+                continue
+            historico.append({
+                "codigo_externo": hash_codigo("MENSAL", nome_aba, linha),
+                "competencia": competencia,
+                "cliente_nome": cliente_nome,
+                "pet_nome": pet_nome,
+                "plano_nome": normalizar_plano(plano),
+                "valor_mensal": numero(valor),
+                "data_inicio": data_iso(inicio),
+                "data_reajuste": data_iso(reajuste),
+                "adicional": texto(adicional) or None,
+                "quantidade_banho": None,
+                "valor_banho": None,
+                "observacoes": observacao(pago, meses, comprovante) or None,
+                "origem": "PLANOS 2026 - HISTORICO",
+                "linha_origem": linha,
+            })
+        competencias_historico.add(competencia)
 
     aba_atual = workbook[nome_aba_atual]
     for linha, valores in enumerate(aba_atual.iter_rows(min_row=2, values_only=True), start=2):
@@ -176,6 +212,7 @@ def extrair(caminho: Path) -> dict:
                 "pet": pet_nome,
                 "problema": "plano ausente" if not texto(plano) else "valor ausente",
             })
+            continue
         atuais.append({
             "codigo_externo": hash_codigo("ATUAL", linha),
             "cliente_codigo": hash_codigo("CLIENTE", cliente_nome),
