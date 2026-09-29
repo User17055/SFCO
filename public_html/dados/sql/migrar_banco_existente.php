@@ -116,6 +116,7 @@ $pdo->exec('ALTER TABLE planos MODIFY nome VARCHAR(100) NOT NULL');
 $indices = [
     ['clientes', 'uq_clientes_codigo_externo', 'codigo_externo'],
     ['pets', 'uq_pets_codigo_externo', 'codigo_externo'],
+    ['planos', 'uq_planos_nome', 'nome'],
     ['assinaturas', 'uq_assinaturas_codigo_externo', 'codigo_externo'],
 ];
 foreach ($indices as [$tabela, $indice, $coluna]) {

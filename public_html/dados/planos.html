@@ -162,16 +162,26 @@
               <h2 class="text-sm font-semibold text-slate-900">Todos os planos por tutor e pet</h2>
               <p class="text-xs text-slate-500 mt-0.5">Clique no tutor e depois no pet para ver o plano completo</p>
             </div>
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap items-center gap-2">
               <button type="button" class="filtro-plano px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600" data-filtro="todos">Todos</button>
-              <button type="button" class="filtro-plano px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700" data-filtro="novos">Novos</button>
+              <button type="button" class="filtro-plano px-3 py-2 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700" data-filtro="novos">Iniciados</button>
               <button type="button" class="filtro-plano px-3 py-2 rounded-lg text-xs font-semibold bg-red-100 text-red-700" data-filtro="cancelados">Cancelados</button>
+              <label for="filtro-periodo-planos" class="sr-only">Filtrar por periodo</label>
+              <select id="filtro-periodo-planos" class="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-200">
+                <option value="">Todos os periodos</option>
+              </select>
             </div>
           </div>
           <div class="flex flex-col sm:flex-row gap-3 mt-4">
             <input id="busca-planos" type="search" class="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-blue-200" placeholder="Buscar tutor, pet ou nome do plano">
             <span id="total-planos-listados" class="text-xs text-slate-500 self-center">Carregando...</span>
           </div>
+        </div>
+        <div id="resumo-cancelamentos-periodo" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 p-5 border-b border-slate-100 bg-slate-50" hidden>
+          <div class="rounded-xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Cancelamentos</p><strong id="estatistica-cancelamentos-total" class="block text-xl text-slate-900 mt-1">0</strong></div>
+          <div class="rounded-xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Valor cancelado</p><strong id="estatistica-cancelamentos-valor" class="block text-xl text-blue-800 mt-1">R$ 0,00</strong></div>
+          <div class="rounded-xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Media por cancelamento</p><strong id="estatistica-cancelamentos-media" class="block text-xl text-slate-900 mt-1">R$ 0,00</strong></div>
+          <div class="rounded-xl border border-slate-200 bg-white p-4"><p class="text-xs text-slate-500">Motivo principal</p><strong id="estatistica-cancelamentos-motivo" class="block text-base text-slate-900 mt-1">-</strong></div>
         </div>
         <div id="planos-erro" class="cadastro-erro m-5" hidden role="alert">
           <i data-lucide="circle-alert" class="w-4 h-4"></i>
@@ -187,6 +197,6 @@
 <script src="js/auth.js"></script>
 <script src="js/components.js?v=20260911-1"></script>
 <script src="js/layout.js?v=20260731-3"></script>
-<script src="js/planos.js?v=20260911-1"></script>
+<script src="js/planos.js?v=20260911-2"></script>
 </body>
 </html>

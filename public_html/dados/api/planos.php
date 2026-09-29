@@ -329,6 +329,8 @@ try {
 
     responderJson(200, [
         'sucesso' => true,
+        'competenciaAtual' => $movimentos['competenciaAtual'],
+        'competenciasDisponiveis' => $todasCompetencias,
         'catalogo' => $catalogo,
         'assinaturas' => $assinaturas,
         'cancelamentosImportados' => $cancelamentos,
