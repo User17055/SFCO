@@ -170,7 +170,7 @@ async function carregarDashboard() {
 document.addEventListener('DOMContentLoaded', carregarDashboard);
 
 document.addEventListener('DOMContentLoaded', () => {
-  const navegar = (filtro) => { window.location.href = `planos.html?filtro=${filtro}`; };
+  const navegar = (filtro) => { window.location.href = `planos.html?filtro=${filtro}#secao-planos`; };
   const configurarCard = (id, filtro) => {
     const card = document.getElementById(id);
     if (!card) return;

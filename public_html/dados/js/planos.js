@@ -12,7 +12,13 @@ function criarElemento(tag, classe, texto) {
 
 function assinaturasParaExibir() {
   if (filtroAtual === 'novos') {
-    return dadosPlanos.assinaturas.filter((item) => item.novo && item.status === 'Ativo');
+    return dadosPlanos.assinaturas
+      .filter((item) => item.novo && item.status === 'Ativo')
+      .sort((a, b) => {
+        const dataA = a.dataInicio ? new Date(`${a.dataInicio}T12:00:00`).getTime() : 0;
+        const dataB = b.dataInicio ? new Date(`${b.dataInicio}T12:00:00`).getTime() : 0;
+        return dataB - dataA || Number(b.id || 0) - Number(a.id || 0);
+      });
   }
 
   if (filtroAtual === 'cancelados') {
@@ -134,12 +140,49 @@ function criarTutor(nomeTutor, itens) {
   return tutor;
 }
 
+function criarPlanoRecente(item) {
+  const cartao = criarElemento('article', 'rounded-xl border border-slate-200 bg-white p-4 hover:bg-slate-50 transition-colors');
+  const topo = criarElemento('div', 'flex flex-col sm:flex-row sm:items-start justify-between gap-3');
+  const identidade = criarElemento('div', 'min-w-0');
+  identidade.appendChild(criarElemento('strong', 'block text-sm text-slate-900', item.cliente || 'Tutor nao informado'));
+  identidade.appendChild(criarElemento('span', 'block text-xs text-slate-500 mt-1', `Pet: ${item.pet || 'Nao informado'}`));
+  topo.appendChild(identidade);
+
+  const data = criarElemento(
+    'span',
+    'shrink-0 inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700',
+    item.dataInicio ? formatDate(item.dataInicio) : 'Data nao informada'
+  );
+  topo.appendChild(data);
+  cartao.appendChild(topo);
+
+  const detalhes = criarElemento('div', 'grid sm:grid-cols-2 gap-2 mt-3 text-xs');
+  detalhes.appendChild(criarElemento('span', 'text-slate-700', `Plano: ${item.plano || 'Nao informado'}`));
+  detalhes.appendChild(criarElemento('span', 'text-slate-500 sm:text-right', `Valor mensal: ${formatCurrency(Number(item.valorMensal || 0))}`));
+  cartao.appendChild(detalhes);
+  return cartao;
+}
+
 function renderDiretorio() {
   const diretorio = document.getElementById('diretorio-planos');
+  const titulo = document.getElementById('titulo-lista-planos');
+  const descricao = document.getElementById('descricao-lista-planos');
   const termo = document.getElementById('busca-planos').value.trim().toLocaleLowerCase('pt-BR');
   const itens = assinaturasParaExibir().filter((item) => correspondeBusca(item, termo));
   diretorio.innerHTML = '';
-  document.getElementById('total-planos-listados').textContent = `${itens.length} plano(s)`;
+  document.getElementById('total-planos-listados').textContent = filtroAtual === 'novos'
+    ? `${itens.length} plano(s) novo(s)`
+    : `${itens.length} plano(s)`;
+
+  if (filtroAtual === 'novos') {
+    titulo.textContent = 'Ultimos planos iniciados';
+    descricao.textContent = 'Do mais recente para o mais antigo no mes atual';
+  } else {
+    titulo.textContent = filtroAtual === 'cancelados' ? 'Planos cancelados' : 'Todos os planos por tutor e pet';
+    descricao.textContent = filtroAtual === 'cancelados'
+      ? 'Consulte os cancelamentos e seus detalhes'
+      : 'Clique no tutor e depois no pet para ver o plano completo';
+  }
 
   document.querySelectorAll('[data-filtro]').forEach((botao) => {
     const ativo = botao.dataset.filtro === filtroAtual;
@@ -151,6 +194,15 @@ function renderDiretorio() {
     diretorio.appendChild(criarElemento('p', 'text-center text-sm text-slate-500 py-8', 'Nenhum plano encontrado neste filtro.'));
     return;
   }
+
+  if (filtroAtual === 'novos') {
+    diretorio.className = 'p-5 grid gap-3';
+    itens.forEach((item) => diretorio.appendChild(criarPlanoRecente(item)));
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
+
+  diretorio.className = 'p-5 space-y-3';
 
   const porTutor = new Map();
   itens.forEach((item) => {
