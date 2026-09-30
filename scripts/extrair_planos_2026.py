@@ -231,30 +231,67 @@ def extrair(caminho: Path) -> dict:
             valores_planos[plano_nome][valor_mensal] += 1
 
     aba_cancelamentos = workbook["CANCELAMENTOS"]
+    cancelamentos_agregados = []
+    cancelamentos_detalhados = []
+    ano_bloco_cancelamentos = None
     for linha, valores in enumerate(aba_cancelamentos.iter_rows(min_row=2, values_only=True), start=2):
         dados = list(valores[:7]) + [None] * max(0, 7 - len(valores))
         cliente, plano, tentativa, mes, motivo, valor, quantidade = dados[:7]
         cliente_nome = texto(cliente)
         mes_nome = chave(mes)
+        ano_no_mes = re.search(r"\b(20\d{2})\b", mes_nome)
+        if ano_no_mes:
+            ano_bloco_cancelamentos = int(ano_no_mes.group(1))
+        mes_nome = re.sub(r"\s+20\d{2}\b", "", mes_nome).strip()
+        if mes_nome == "AGO":
+            mes_nome = "AGOSTO"
         qtd = inteiro(quantidade)
-        if not cliente_nome or mes_nome not in NUMERO_MES or qtd is None:
+        if not cliente_nome or mes_nome not in NUMERO_MES:
             continue
         mes_numero = NUMERO_MES[mes_nome]
-        # Meses ate a aba atual pertencem ao ano da planilha; meses futuros
-        # pertencem ao historico do ano anterior.
-        ano = ano_atual if mes_numero <= mes_atual else ano_atual - 1
-        cancelamentos.append({
-            "codigo_externo": hash_codigo("CANCELAMENTOS", linha),
+        if ano_bloco_cancelamentos is None:
+            # O inicio da aba contem resumos de anos anteriores. Nessa parte,
+            # somente linhas com a quantidade consolidada sao confiaveis.
+            if qtd is None:
+                continue
+            ano = ano_atual if mes_numero <= mes_atual else ano_atual - 1
+            destino_cancelamento = cancelamentos_agregados
+            quantidade_cancelamento = max(qtd, 1)
+            prefixo_codigo = "CANCELAMENTOS_AGREGADO"
+        else:
+            # A partir de "JANEIRO 2026" a planilha passa a listar um plano
+            # cancelado por linha e deixa a coluna de quantidade vazia.
+            ano = ano_bloco_cancelamentos
+            if not ano_no_mes and ano == ano_atual and mes_numero > mes_atual:
+                # Ha uma linha antiga de dezembro misturada ao bloco de 2026;
+                # o resumo agregado do ano anterior ja cobre esse periodo.
+                continue
+            destino_cancelamento = cancelamentos_detalhados
+            quantidade_cancelamento = max(qtd, 1) if qtd is not None else 1
+            prefixo_codigo = "CANCELAMENTOS_DETALHE"
+        destino_cancelamento.append({
+            "codigo_externo": hash_codigo(prefixo_codigo, ano, linha),
             "cliente_nome": cliente_nome,
             "plano_nome": normalizar_plano(plano) if texto(plano) else None,
             "competencia": f"{ano:04d}-{mes_numero:02d}-01",
             "motivo": texto(motivo) or None,
             "tentativa_recuperacao": texto(tentativa) or None,
             "valor": numero(valor),
-            "quantidade": max(qtd, 1),
+            "quantidade": quantidade_cancelamento,
             "origem": "PLANOS 2026 - CANCELAMENTOS",
             "linha_origem": linha,
         })
+
+    # Quando existe o bloco detalhado do ano da planilha, ele substitui os
+    # antigos totais agregados desse mesmo ano. Assim cada cancelamento atual e
+    # contado uma vez, inclusive quando a coluna QUANTIDADE esta vazia.
+    anos_detalhados = {
+        int(item["competencia"][:4]) for item in cancelamentos_detalhados
+    }
+    cancelamentos = [
+        item for item in cancelamentos_agregados
+        if int(item["competencia"][:4]) not in anos_detalhados
+    ] + cancelamentos_detalhados
 
     catalogo = []
     for nome, contagem in sorted(valores_planos.items()):

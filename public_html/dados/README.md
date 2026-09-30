@@ -10,7 +10,7 @@ A fonte foi a planilha `PLANOS 2026.xlsx`.
 
 - dezembro/2025 e janeiro a junho/2026: histórico mensal da aba `DETAILS`;
 - julho/2026: situação atual da aba `JULHO`;
-- cancelamentos: 248 registros da aba `CANCELAMENTOS`;
+- cancelamentos: 415 registros da aba `CANCELAMENTOS`, incluindo 21 em setembro/2026;
 - agosto a dezembro dos cancelamentos: tratados como 2025;
 - janeiro a julho dos cancelamentos: tratados como 2026.
 
