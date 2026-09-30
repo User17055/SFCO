@@ -282,16 +282,14 @@ def extrair(caminho: Path) -> dict:
             "linha_origem": linha,
         })
 
-    # Quando existe o bloco detalhado do ano da planilha, ele substitui os
-    # antigos totais agregados desse mesmo ano. Assim cada cancelamento atual e
-    # contado uma vez, inclusive quando a coluna QUANTIDADE esta vazia.
-    anos_detalhados = {
-        int(item["competencia"][:4]) for item in cancelamentos_detalhados
-    }
+    # Este arquivo alimenta exclusivamente o painel de 2026. Usa somente o
+    # bloco detalhado do ano da planilha e descarta resumos de anos anteriores.
+    # Cada linha representa um plano cancelado, inclusive quando QUANTIDADE
+    # estiver vazia.
     cancelamentos = [
-        item for item in cancelamentos_agregados
-        if int(item["competencia"][:4]) not in anos_detalhados
-    ] + cancelamentos_detalhados
+        item for item in cancelamentos_detalhados
+        if int(item["competencia"][:4]) == ano_atual
+    ]
 
     catalogo = []
     for nome, contagem in sorted(valores_planos.items()):
